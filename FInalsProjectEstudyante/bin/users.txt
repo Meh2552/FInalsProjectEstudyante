@@ -1,4 +1,5 @@
 s1,s1pass,STUDENT,02000-123456,Juan Miguel Enrile
 c1,c1pass,CASHIER,Cashier1
 a1,a1pass,ACCOUNTING,Accounting1
-r1,r1pass,REGISTR
+r1,r1pass,REGISTRAR,Registrar1
+admin,adminpass,ADMIN,ADMINISTRATOR
