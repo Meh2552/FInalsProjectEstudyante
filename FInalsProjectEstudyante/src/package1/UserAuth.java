@@ -40,36 +40,71 @@ public class UserAuth
 
     private void signupStudent() 
     {
-        System.out.println("=== SIGN UP ===");
-        String user = system.validate().requireText("Username: ");
-        String pass = system.validate().requireText("Password: ");
-        if (system.userManager().usernameExists(user)) 
-        {
-            System.out.println("Username exists.");
-            return;
-        }
-        
-        String stNum;
-        while (true) 
-        {
-            stNum = system.validate().requireText("Student Number (11 digits): ");
+
+        boolean isSignUp = true;
+        String user, pass = "", conPass, stNum, name;
+
+        do { 
             
-            if (!stNum.matches("[0-9]{11}")) 
-            {
-                System.out.println("Invalid. Must be 11 digits.");
-                continue;
+            System.out.println("=== SIGN UP ===");
+
+            user = system.validate().requireText("Username (Type 'x' to go back) : ");
+            if (user.matches("[xX]")) {
+                return;
             }
-            
-            if (system.userManager().studentNumExists(stNum)) 
-            {
-                System.out.println("Student number used.");
-                continue;
+
+            // Loop for password
+            while (isSignUp) {
+
+                pass = system.validate().requireText("Password (Type 'x' to go back) : ");
+                if (pass.matches("[xX]")) {
+                    break;
+                }
+
+                conPass = system.validate().requireText("Confirm Password (Type 'x' to go back) : "); // Confirm password
+                if (conPass.matches("[xX]")) {
+                    continue;
+                }
+
+                // Confirms if username is already in the system
+                if (system.userManager().usernameExists(user)) {
+                    System.out.println("Username exists.");
+                    break;
+                }
+
+                // Confirms if password and confirmed password is the same
+                if (pass.equals(conPass)) {
+                    isSignUp = false;
+                } else {
+                    System.out.println("Incorrect password, type your password again to confirm");
+                }
+
             }
-            
-            break;
-        }
+
+            // Keeps generating random student numbers until one that isn't occupied
+            do {
+                stNum = system.userManager().studentNumGenerate();
+            } while (system.userManager().studentNumExists(stNum));
+            // End of pass loop
+
+            name = system.validate().requireText("Full name: ");
+
+            System.out.println("= Confirm =");
+            System.out.println("Username: " + user);
+            System.out.println("Full name: " + name);
+            System.out.println("Generated Student Number: " + stNum);
+
+            String confirm = system.validate().editCancelContinue();
+            if ( confirm.equals("EDIT"))  {
+                isSignUp = true;
+            }
+            else if (confirm.equals("CANCEL")) {
+                return;
+            }
+
+        } 
         
-        String name = system.validate().requireText("Full name: ");
+        while (isSignUp); // end of signup loop
         
         UserRecord r = new UserRecord(user, pass, stNum, name);
         system.userManager().addUser(r);
@@ -79,20 +114,39 @@ public class UserAuth
 
     private void login() 
     {
-        System.out.println("=== LOGIN ===");
-        
-        String user = system.validate().requireText("Username: ");
-        String pass = system.validate().requireText("Password: ");
-        
-        UserRecord record = system.userManager().verify(user, pass);
-        
-        if (record == null) 
-        {
-            System.out.println("Wrong credentials.");
+        // Login loop
+        while (true) { 
+
+            System.out.println("=== LOGIN ===");
+
+            // Input prompt loop
+            String user, pass;
+            while (true) {
+
+                user = system.validate().requireText("Username (Type 'x' to go back) : ");
+                if (user.matches("[xX]")) {
+                    return;
+                }
+
+                pass = system.validate().requireText("Password (Type 'x' to go back) : ");
+                if (pass.matches("[xX]")) {
+                    continue;
+                }
+
+                break;
+            }
+
+            UserRecord record = system.userManager().verify(user, pass);
+
+            if (record == null) {
+                System.out.println("Wrong credentials.");
+                continue;
+            }
+
+            launchUser(record);
             return;
         }
-        
-        launchUser(record);
+
     }
 
     private void launchUser(UserRecord record) 

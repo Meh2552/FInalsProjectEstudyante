@@ -56,6 +56,15 @@ public class UserManager extends DocuHandler
         return false;
     }
 
+    public String studentNumGenerate() {
+
+        int randomNum = (int) (Math.random() * 1000001);
+        String generated = String.format("%s"+ "%06d","02000-", randomNum);
+
+        return generated;
+        
+    }
+
     public UserRecord verify(String username, String password) 
     {
         List<String> lines = read();
