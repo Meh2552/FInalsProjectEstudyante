@@ -74,10 +74,20 @@ public class MainSystem
 
 		LocalDateTime time = LocalDateTime.now();
 		DateTimeFormatter form1 = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-		DateTimeFormatter form2 = DateTimeFormatter.ofPattern("HH:mm");
+		DateTimeFormatter form2 = DateTimeFormatter.ofPattern("HH:mm:ss");
 
 		String formDate = "[" + time.format(form1) + "] " + time.format(form2);
 		return formDate;
 	        
 	}
+
+	public String genDate(String pattern) {
+
+        LocalDateTime time = LocalDateTime.now();
+        DateTimeFormatter form1 = DateTimeFormatter.ofPattern(pattern);
+
+        String formDate = time.format(form1);
+        return formDate;
+
+    }
 }
