@@ -121,8 +121,9 @@ public class Student extends User
             break;
         }
 
-        DocumentRequest request = new DocumentRequest(record.getUsername(), record.getStudentNum(), doc, "Pending Payment", system.genDate());
+        DocumentRequest request = new DocumentRequest(record.getUsername(), record.getStudentNum(), doc, "Pending Payment", system.genDate(), dm.genId());
         dm.addRequest(request);
+        QueueSystem qs = new QueueSystem(request.getId());
         
         System.out.println("Request submitted.");
     }
@@ -140,7 +141,7 @@ public class Student extends User
             if (req.getStudentNum() != null && req.getStudentNum().equals(record.getStudentNum())) 
             {
                 System.out.println("-".repeat(50));
-                System.out.println("   REQUEST: " + req.getDate());
+                System.out.println("   REQUEST: " + req.getDate()); //TODO: change to
                 System.out.printf("%n   REQUESTED DOCUMENT: %-15s  %s%n"  ,req.getDocName(), req.getStatus());
                 found = true;
             }
@@ -267,7 +268,7 @@ public class Student extends User
         }
     }
 
-    private void deleteAccount() 
+    private void deleteAccount() // TODO: possibly gawin to manage acc not sure
     {
         String user = record.getUsername();
         System.out.println("= CONFIRM DELETE ACCOUNT =");

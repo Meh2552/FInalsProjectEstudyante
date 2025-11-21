@@ -1,7 +1,5 @@
 package package1;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class DocumentManager extends DocuHandler 
@@ -53,6 +51,24 @@ public class DocumentManager extends DocuHandler
         write(out);
     }
 
+    public String genId() {
+        List<DocumentRequest> all = loadAll();
+
+        int i = 1;
+        for (DocumentRequest req : all) {
+
+            int check = Integer.parseInt(req.getId());
+            if (i <= check) {
+                i = check;
+            }
+
+            i++;
+
+        }
+
+        String result = String.format("%04d", i);
+        return result;
+    }
 
 }
 

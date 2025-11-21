@@ -1,2 +1,1 @@
-QUEUE:C1,C2,C3,C4
-C1:a,b,c,d
+C:0006,02000-123456,SF10,Pending Payment,CASHIER,[21-11-2025] 21:07,false

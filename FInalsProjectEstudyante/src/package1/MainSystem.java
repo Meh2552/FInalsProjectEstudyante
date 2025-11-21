@@ -74,7 +74,7 @@ public class MainSystem
 
 		LocalDateTime time = LocalDateTime.now();
 		DateTimeFormatter form1 = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-		DateTimeFormatter form2 = DateTimeFormatter.ofPattern("HH:mm:ss");
+		DateTimeFormatter form2 = DateTimeFormatter.ofPattern("HH:mm");
 
 		String formDate = "[" + time.format(form1) + "] " + time.format(form2);
 		return formDate;

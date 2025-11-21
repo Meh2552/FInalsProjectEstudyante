@@ -8,14 +8,16 @@ public class DocumentRequest
     private String status;
 
     private String date;
+    private String id;
 
-    public DocumentRequest(String username, String studentNum, String docName, String status, String date) 
+    public DocumentRequest(String username, String studentNum, String docName, String status, String date, String id) 
     {
         this.username = username;
         this.studentNum = studentNum;
         this.docName = docName;
         this.status = status;
         this.date = date;
+        this.id = id;
 
     }
 
@@ -48,19 +50,23 @@ public class DocumentRequest
         return date;
     }
 
+    public String getId() {
+        return id;
+    }
+
     public String toFileLine() 
     {
-        return username + "," + studentNum + "," + docName + "," + status + "," + date;
+        return username + "," + studentNum + "," + docName + "," + status + "," + date + "," + id;
     }
 
     public static DocumentRequest fromLine(String line) 
     {
-        String[] p = line.split(",", 5);
+        String[] p = line.split(",", 6);
         if (p.length < 5)
         {
         	return null;
         }
-        return new DocumentRequest(p[0], p[1], p[2], p[3], p[4]);
+        return new DocumentRequest(p[0], p[1], p[2], p[3], p[4], p[5]);
     }
 }
 
