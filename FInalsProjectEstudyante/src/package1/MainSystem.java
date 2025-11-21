@@ -1,5 +1,7 @@
 package package1;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class MainSystem 
@@ -13,47 +15,69 @@ public class MainSystem
 		
 	}
 	
-	Scanner scan = new Scanner (System.in);
+	public MainSystem() 
+	{
+		this.scan = new Scanner (System.in);
+        this.userManager = new UserManager();
+        this.documentManager = new DocumentManager();
+        this.helpdeskManager = new HelpdeskManager();
+        this.helpdeskResponseManager = new HelpdeskResponseManager();
+        this.validate = new Validator(this);
+
+        userManager.ensure();
+        documentManager.ensure();
+        helpdeskManager.ensure();
+        helpdeskResponseManager.ensure();
+    }
+	
+	private Scanner scan;
+	private Validator validate;
+	private UserManager userManager;
+	private DocumentManager documentManager;
+	private HelpdeskManager helpdeskManager;
+	private HelpdeskResponseManager helpdeskResponseManager;
 	
 	public Scanner scan()
 	{
 		return scan;
 	}
 	
-	 private Validator validate;
-	 private UserManager userManager;
-	 private DocumentManager documentManager;
-	 private HelpdeskManager helpdeskManager;
-
-	 public Validator validate()
-	 { 
-		 return validate; 
-	 }
+	public Validator validate()
+	{ 
+		return validate; 
+	}
 	 
-	 public UserManager userManager() 
-	 { 
-		 return userManager; 
-	 }
+	public UserManager userManager() 
+	{ 
+		return userManager; 
+	}
 	 
-	 public DocumentManager documentManager() 
-	 { 
-		 return documentManager; 
-	 }
+	public DocumentManager documentManager() 
+	{ 
+		return documentManager; 
+	}
 	 
-	 public HelpdeskManager helpdeskManager() 
-	 {
-		 return helpdeskManager;
-	 }
+	public HelpdeskManager helpdeskManager() 
+	{
+		return helpdeskManager;
+	}
+	
+	public HelpdeskResponseManager helpdeskResponseManager()
+	{
+		return helpdeskResponseManager;
+	}
 
-	 public MainSystem() 
-	 {
-		 this.userManager = new UserManager();
-		 this.documentManager = new DocumentManager();
-		 this.helpdeskManager = new HelpdeskManager();
-		 this.validate = new Validator(this);
+	 
+	 
+	public String genDate() 
+	{
 
-		 userManager.ensure();
-		 documentManager.ensure();
-		 helpdeskManager.ensure();
-	    }
+		LocalDateTime time = LocalDateTime.now();
+		DateTimeFormatter form1 = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+		DateTimeFormatter form2 = DateTimeFormatter.ofPattern("HH:mm");
+
+		String formDate = "[" + time.format(form1) + "] " + time.format(form2);
+		return formDate;
+	        
+	}
 }

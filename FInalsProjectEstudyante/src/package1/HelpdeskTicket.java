@@ -6,13 +6,15 @@ public class HelpdeskTicket
     private String studentNum;
     private String issue;
     private String status;
+    private String date;
 
-    public HelpdeskTicket(int id, String studentNum, String issue, String status) 
+    public HelpdeskTicket(int id, String studentNum, String issue, String status, String date) 
     {
         this.id = id;
         this.studentNum = studentNum;
         this.issue = issue;
         this.status = status;
+        this.date = date;
     }
 
     public int getId() 
@@ -35,6 +37,11 @@ public class HelpdeskTicket
     	return this.status; 
     }
     
+    public String getDate()
+    {
+    	return this.date;
+    }
+    
     public void setStatus(String status)
     { 
     	this.status = status;
@@ -42,14 +49,15 @@ public class HelpdeskTicket
 
     public String toFileLine()
     {
-        return id + "," + studentNum + "," + issue + "," + status;
+    	String safeIssue = this.issue.replace(",", "|");
+        return id + "," + studentNum + "," + safeIssue + "," + status +  "," + date;
     }
 
     public static HelpdeskTicket fromLine(String line) 
     {
-        String[] part = line.split(",", 4);
+        String[] part = line.split(",", 5);
         
-        if (part.length < 4)
+        if (part.length < 5)
         {
         	return null;
         }
@@ -65,6 +73,6 @@ public class HelpdeskTicket
         	id = 0; 
         }
         
-        return new HelpdeskTicket(id, part[1], part[2], part[3]);
+        return new HelpdeskTicket(id, part[1], part[2], part[3], part[4]);
     }
 }

@@ -18,10 +18,11 @@ public class Admin extends User
             System.out.println("=== ADMIN MENU ===");
             System.out.println("[1] View Users");
             System.out.println("[2] Add Employee");
-            System.out.println("[3] Delete User");
-            System.out.println("[4] Helpdesk");
-            System.out.println("[5] Logout");
-            int choice = system.validate().menuChoice("Choose: ", 4);
+            System.out.println("[3] Respond to Concern");
+            System.out.println("[4] View All Helpdesk Responses");
+            System.out.println("[5] Delete User");
+            System.out.println("[6] Logout");
+            int choice = system.validate().menuChoice("Choose: ", 6);
             
             if (choice == 1)
             {
@@ -35,15 +36,20 @@ public class Admin extends User
             
             else if (choice == 3)
             {
-            	deleteUser();
+            	respondToTicketAdmin();
             }
             
             else if (choice == 4)
             {
-            	//helpdesk to wala pa
+            	viewAllResponses();
             }
             
             else if (choice == 5)
+            {
+            	deleteUser();
+            }
+            
+            else if (choice == 6)
             {
             	return;
             }
@@ -121,11 +127,11 @@ public class Admin extends User
 
             name = system.validate().requireText("Full name: ");
 
-        System.out.println("= CONFIRM EMPLOYEE CREATION: =");
-        System.out.println("- Username: " + user);
-        System.out.println("- Password: " + pass);
-        System.out.println("- Position: " + role);
-        System.out.println("- Full Name: " + name);
+            System.out.println("= CONFIRM EMPLOYEE CREATION: =");
+            System.out.println("- Username: " + user);
+            System.out.println("- Password: " + pass);
+            System.out.println("- Position: " + role);
+            System.out.println("- Full Name: " + name);
 
         switch (system.validate().editCancelContinue()) {
 
@@ -145,9 +151,86 @@ public class Admin extends User
         break;
 
         }
+        
         um.addUser(new UserRecord(user, pass, role, name));
         
         System.out.println("Employee created.");
+    }
+    
+    private void respondToTicketAdmin() 
+    {
+        List<HelpdeskTicket> tickets = system.helpdeskManager().loadTickets();
+        
+        if (tickets.size() == 0) 
+        {
+            System.out.println("No tickets.");
+            
+            return;
+        }
+
+        while (true) 
+        {
+            System.out.println("=== SELECT TICKET TO RESPOND ===");
+            
+            for (int i = 0; i < tickets.size(); i++) 
+            {
+                HelpdeskTicket t = tickets.get(i);
+                
+                System.out.println("[" + (i+1) + "] ID:" + t.getId() + " (" + t.getStudentNum() + ") " + t.getIssue() + " | Status: " + t.getStatus());
+            }
+
+            int sel = system.validate().menuChoice("Select ticket: ", tickets.size());
+            
+            String action = system.validate().editCancelContinue();
+            
+            if (action.equals("EDIT")) 
+            {
+            	continue;
+            }
+            
+            if (action.equals("CANCEL"))
+            {
+            	return;
+            }
+
+            HelpdeskTicket chosen = tickets.get(sel - 1);
+            
+            String respMsg = system.validate().requireText("Type your response message: ");
+            
+            String ts = system.genDate();
+            
+            String responderName = record.getFullName();
+
+            HelpdeskResponse resp = new HelpdeskResponse(chosen.getId(), responderName, respMsg, ts);
+            system.helpdeskResponseManager().addResponse(resp);
+
+            chosen.setStatus("Answered");
+            system.helpdeskManager().saveTickets(tickets);
+
+            System.out.println("Response saved and ticket marked Answered.");
+            
+            return;
+        }
+    }
+
+    private void viewAllResponses() 
+    {
+        List<HelpdeskResponse> rlist = system.helpdeskResponseManager().loadAll();
+        
+        if (rlist.size() == 0) 
+        {
+            System.out.println("No helpdesk responses yet.");
+            
+            return;
+        }
+        
+        System.out.println("=== ALL HELP DESK RESPONSES ===");
+        
+        for (HelpdeskResponse r : rlist) 
+        {
+            System.out.println("TicketID:" + r.getTicketId() + " | " + r.getRespond() + " " + r.getTime());
+            System.out.println("-> " + r.getMessage());
+        }
     }
 
     private void deleteUser() 

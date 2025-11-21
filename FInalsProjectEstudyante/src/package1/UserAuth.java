@@ -44,20 +44,25 @@ public class UserAuth
         boolean isSignUp = true;
         String user, pass = "", conPass, stNum, name;
 
-        do { 
+        do 
+        { 
             
             System.out.println("=== SIGN UP ===");
 
             user = system.validate().requireText("Username (Type 'x' to go back) : ");
-            if (user.matches("[xX]")) {
+            
+            if (user.matches("[xX]")) 
+            {
                 return;
             }
 
             // Loop for password
-            while (isSignUp) {
+            while (isSignUp) 
+            {
 
                 pass = system.validate().requireText("Password (Type 'x' to go back) : ");
-                if (pass.matches("[xX]")) {
+                if (pass.matches("[xX]")) 
+                {
                     break;
                 }
 
