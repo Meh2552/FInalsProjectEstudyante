@@ -94,7 +94,7 @@ public class Validator
         }
     }
 
-    public String editCancelContinue() // di pa nagagamit
+    public String editCancelContinue()
     {
         while (true) 
         {
