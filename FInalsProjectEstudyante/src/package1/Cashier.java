@@ -20,7 +20,8 @@ public class Cashier extends Employee
         {
             System.out.println("\n=== CASHIER MENU ===");
             System.out.println("[1] View Pending Payments");
-            System.out.println("[2] Mark as Paid");
+            System.out.println("[2] Manage Requests");
+            System.out.println("[2] Cashier History"); // TODO: eto
             System.out.println("[3] Logout");
             int choice = system.validate().menuChoice("Choose: ", 3);
             

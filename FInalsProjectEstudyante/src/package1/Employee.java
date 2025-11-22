@@ -5,9 +5,24 @@ import java.util.*;
 public abstract class Employee extends User
 {
 
+    // not sure tama to, ginaya ko lang doon sa iba, basically accesible mga classes na to only for employees
+    private QueueSystem queueSys;
+
+    public QueueSystem queueSystem() {
+        return this.queueSys;
+    }
+    public QueueSystem.QueueManager queueManager() {
+        return queueSys.getQueueManager();
+    }
+
+    public QueueSystem.HistoryManager historyManager() {
+        return queueSys.getHistMan();
+    }
+
     public Employee(MainSystem system, UserRecord record) 
     {
         super(system, record);
+        this.queueSys = new QueueSystem();
     }
 
     public abstract void employeeMenu();

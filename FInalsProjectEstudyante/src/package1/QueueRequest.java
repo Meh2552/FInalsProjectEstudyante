@@ -3,7 +3,6 @@ package package1;
 public class QueueRequest {
 
     private String id, stNum, document, state, date, window;
-    private boolean waiting = false;
 
     public QueueRequest (String id, String stNum, String document, String state, String window, String date){
 
@@ -13,15 +12,6 @@ public class QueueRequest {
         this.state = state;
         this.id = id;
         this.window = window;
-
-    }
-
-    public QueueRequest(String id, String stNum, String document, String state, String window, String date, String waiting) {
-
-        this(id, stNum, document, state, window, date);
-        if (waiting.equals("true")) this.waiting = true;
-
-        else this.waiting = false;
 
     }
 
@@ -49,20 +39,20 @@ public class QueueRequest {
         return window;
     }
 
+    public void setWindow(String window) {
+        this.window = window;
+    }
+
     public String getDate() {
         return date;
     }
 
-    public boolean isWaiting() {
-        return this.waiting;
-    }
-
-    public void setWaiting(boolean waiting) {
-        this.waiting = waiting;
+    public void setDate(String date) {
+        this.date = date;
     }
     
     public String toFileLine() {
-        return getId() + "," + getStNum() + "," + getDocument() + "," + getState() + "," + getWindow() + "," + getDate() + "," + isWaiting();
+        return getId() + "," + getStNum() + "," + getDocument() + "," + getState() + "," + getWindow() + "," + getDate();
     }
 
     public static QueueRequest fromLine(String line) {
@@ -70,7 +60,7 @@ public class QueueRequest {
         if (p.length < 5) {
             return null;
         }
-        return new QueueRequest(p[0], p[1], p[2], p[3], p[4], p[5], p[6]);
+        return new QueueRequest(p[0], p[1], p[2], p[3], p[4], p[5]);
     }
 
 }
