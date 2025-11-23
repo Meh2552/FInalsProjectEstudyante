@@ -274,6 +274,19 @@ public class QueueSystem {
             return stateList;
         }
 
+        // Load certain states of request in queue 
+        public void loadViewQueue(LinkedList<QueueRequest> queue, boolean willDisplayHeader, String state) {
+            List<QueueRequest> filtered = lookForState(state, queue);
+            ViewQueue vq = new ViewQueue(filtered, willDisplayHeader);
+        }
+
+
+        // Load all states of a queue
+        public void loadViewQueue(List<QueueRequest> queue) {
+            ViewQueue vq = new ViewQueue(queueStates(queue));
+        }
+
+
         public static class ViewQueue {
 
             public ViewQueue(List<QueueRequest> queue, boolean willDisplayHeader) {
