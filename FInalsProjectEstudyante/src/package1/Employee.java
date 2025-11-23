@@ -5,24 +5,9 @@ import java.util.*;
 public abstract class Employee extends User
 {
 
-    // not sure tama to, ginaya ko lang doon sa iba, basically accesible mga classes na to only for employees
-    private QueueSystem queueSys;
-
-    public QueueSystem queueSystem() {
-        return this.queueSys;
-    }
-    public QueueSystem.QueueManager queueManager() {
-        return queueSys.getQueueManager();
-    }
-
-    public QueueSystem.HistoryManager historyManager() {
-        return queueSys.getHistMan();
-    }
-
     public Employee(MainSystem system, UserRecord record) 
     {
         super(system, record);
-        this.queueSys = new QueueSystem();
     }
 
     public abstract void employeeMenu();
@@ -85,6 +70,80 @@ public abstract class Employee extends User
 
             System.out.println("Response saved and ticket marked Answered.");
             return;
+        }
+    }
+
+    public void historyMenu() {
+
+        while (true) {
+
+        System.out.println("=======View History==========");
+        System.out.println("[1] Cashier");
+        System.out.println("[2] Accounting");
+        System.out.println("[3] Registrar");
+        System.out.println("[4] All");
+        System.out.println("[5] Back");
+
+        switch (system.validate().menuChoice("Choose", 5)) {
+
+            case 1:
+            historyDis("CASHIER");
+            break;
+
+            case 2:
+            historyDis("ACCOUNTING");
+            break;
+
+            case 3:
+            historyDis("REGISTRAR");
+            break;
+
+            case 4:
+            historyDis();
+            break;
+
+            case 5:
+            return;
+
+        }
+
+        }
+
+    }
+
+    private void historyDis(String window) {
+        QueueSystem qs = new QueueSystem(1,window);
+        int current = 1;
+
+        while (true) {
+            int max = system.queueSystem().getHistoryManager().countEntry(window);
+            int input = system.validate().minMaxXChoice("Go to page ('x' to go back):", 1, max);
+            if (input == current) System.out.println("Already on page " + input);
+            if (input == -1) return;
+
+            qs = new QueueSystem(input, window);
+            current = input;
+
+        }
+    }
+
+    private void historyDis() {
+        QueueSystem qs = new QueueSystem(1);
+        int current = 1;
+
+        while (true) {
+            int max = system.queueSystem().getHistoryManager().countEntry();
+            int input = system.validate().minMaxXChoice("Go to page ('x' to go back):", 1, max);
+            if (input == current) {
+                System.out.println("Already on page " + input);
+            }
+            if (input == -1) {
+                return;
+            }
+
+            qs = new QueueSystem(input);
+            current = input;
+
         }
     }
 }

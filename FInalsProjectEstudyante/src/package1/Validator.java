@@ -59,6 +59,31 @@ public class Validator
         }
     }
 
+    // returns -1 if back
+    public int minMaxXChoice(String prompt, int min, int max) //para di sumobra
+    {
+        while (true) {
+            System.out.print(prompt);
+            try {
+                String input = system.scan().nextLine().trim();
+                if (input.matches("[Xx]")) return -1;
+
+                if (!input.matches("[0-9]+")) throw new InputMismatchException();
+
+                int choices = Integer.parseInt(input);
+                
+                if (choices >= min && choices <= max) {
+                    return choices;
+                }
+
+                System.out.println("Choose between "+ min + " and " + max);
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input. Enter a number.");
+                system.scan().nextLine();
+            }
+        }
+    }
+
     public int requireInt(String prompt) // para sa integer types
     {
         while (true) 

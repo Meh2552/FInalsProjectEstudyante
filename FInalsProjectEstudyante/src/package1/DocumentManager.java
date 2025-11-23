@@ -39,9 +39,26 @@ public class DocumentManager extends DocuHandler
         return list;
     }
 
+    public void changeState(String id, String state) {
+
+        List<DocumentRequest> list = loadAll();
+
+        for (DocumentRequest request : list) {
+            if (request != null) {
+                if (request.getId().equals(id)) request.setStatus(state);
+
+                else list.add(request);
+                
+            }
+        }
+
+        saveAll(list);
+
+    }
+
     public void saveAll(List<DocumentRequest> reqs) 
     {
-        ArrayList<String> out = new ArrayList<String>();
+        ArrayList<String> out = new ArrayList<>();
         
         for (DocumentRequest r : reqs) 
         {

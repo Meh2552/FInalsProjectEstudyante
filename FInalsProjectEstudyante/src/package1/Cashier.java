@@ -13,6 +13,7 @@ public class Cashier extends Employee
         this.dm = system.documentManager();
     }
 
+
     @Override
     public void employeeMenu() 
     {
@@ -21,8 +22,8 @@ public class Cashier extends Employee
             System.out.println("\n=== CASHIER MENU ===");
             System.out.println("[1] View Pending Payments");
             System.out.println("[2] Manage Requests");
-            System.out.println("[2] Cashier History"); // TODO: eto
-            System.out.println("[3] Logout");
+            System.out.println("[3] Manage History");
+            System.out.println("[4] Logout");
             int choice = system.validate().menuChoice("Choose: ", 3);
             
             if (choice == 1)
@@ -34,8 +35,13 @@ public class Cashier extends Employee
             {
             	markPaid();
             }
-            
+
             else if (choice == 3)
+            {
+            	historyMenu();
+            }
+            
+            else if (choice == 4)
             {
             	return;
             }

@@ -24,6 +24,7 @@ public class MainSystem
         this.helpdeskManager = new HelpdeskManager();
         this.helpdeskResponseManager = new HelpdeskResponseManager();
         this.validate = new Validator(this);
+		this.queueSystem = new QueueSystem();
 
         userManager.ensure();
         documentManager.ensure();
@@ -37,6 +38,7 @@ public class MainSystem
 	private DocumentManager documentManager;
 	private HelpdeskManager helpdeskManager;
 	private HelpdeskResponseManager helpdeskResponseManager;
+	private QueueSystem queueSystem;
 	
 	public Scanner scan()
 	{
@@ -66,6 +68,10 @@ public class MainSystem
 	public HelpdeskResponseManager helpdeskResponseManager()
 	{
 		return helpdeskResponseManager;
+	}
+
+	public QueueSystem queueSystem() {
+		return queueSystem;
 	}
 
 	 

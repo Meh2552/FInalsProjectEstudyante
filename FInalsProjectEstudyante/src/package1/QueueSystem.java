@@ -8,7 +8,7 @@ public class QueueSystem {
     private QueueManager queueMan;
     private HistoryManager histMan;
 
-    public HistoryManager getHistMan() {
+    public HistoryManager getHistoryManager() {
         return histMan;
     }
 
@@ -25,15 +25,30 @@ public class QueueSystem {
         this.queueMan = new QueueManager();
         this.histMan = new HistoryManager();
 
-        getQueueManager().loadQ();
+        this.queueMan.loadQ();
 
     }
 
     public QueueSystem(String id) {
         this();
 
-        getQueueManager().enqueueNew(id);
+        this.queueMan.enqueueNew(id);
     }
+
+    public QueueSystem(int page, String window) {
+        this();
+
+        List<String> list = getHistoryManager().read();
+        HistoryManager.ViewHistory vh = new HistoryManager.ViewHistory(list, 1, window);
+    }
+
+    public QueueSystem(int page) {
+        this();
+
+        List<String> list = getHistoryManager().read();
+        HistoryManager.ViewHistory vh = new HistoryManager.ViewHistory(list, 1);
+    }
+
 
     private static LinkedList<QueueRequest> casQ = new LinkedList<>();
     private static LinkedList<QueueRequest> pauseQ = new LinkedList<>();
@@ -58,7 +73,7 @@ public class QueueSystem {
 
     // Used for display when queue is empty
     protected boolean emptyDisplay(LinkedList<QueueRequest> queue) {
-        if (getCashierQ().isEmpty()) {
+        if (queue.isEmpty()) {
             System.out.println("The queue is empty");
             return true;
         }
@@ -70,12 +85,6 @@ public class QueueSystem {
     // ~~~~~~~~~~~~~~~~~~~~
     public class QueueManager extends DocuHandler {
 
-        private QueueSystem.HistoryManager  histMan = new HistoryManager();
-
-        public QueueSystem.HistoryManager getHistMan() {
-            return histMan;
-        }
-
         @Override
         public String getFileName() {
             return "queue.txt";
@@ -86,28 +95,28 @@ public class QueueSystem {
             ArrayList<String> lines = new ArrayList<>();
             if (!getCashierQ().isEmpty()) {
                 for (QueueRequest req : getCashierQ()) {
-                    String form = "C:" + req.toFileLine();
+                    String form = req.toFileLine();
                     lines.add(form);
                 }
             }
 
             if (!getPauseQ().isEmpty()) {
                 for (QueueRequest req : getPauseQ()) {
-                    String form = "P:" + req.toFileLine();
+                    String form = req.toFileLine();
                     lines.add(form);
                 }
             }
 
             if (!getAccountQ().isEmpty()) {
                 for (QueueRequest req : getAccountQ()) {
-                    String form = "A:" + req.toFileLine();
+                    String form = req.toFileLine();
                     lines.add(form);
                 }
             }
 
             if (!getRegistarQ().isEmpty()) {
                 for (QueueRequest req : getRegistarQ()) {
-                    String form = "R:" + req.toFileLine();
+                    String form =  req.toFileLine();
                     lines.add(form);
                 }
             }
@@ -117,7 +126,8 @@ public class QueueSystem {
 
         public void writeChange(QueueRequest request) { // Writes to queue file and history file
             writeQ();
-            getHistMan().appendHist(request);
+            getHistoryManager().appendHist(request);
+            getDocumentManager().changeState(request.getId(), request.getState());
         }
 
         private void loadQ() {
@@ -126,16 +136,16 @@ public class QueueSystem {
 
             for (String line : lines) {
 
-                if (line.contains("C:")) {
+                if (line.contains("CASHIER")) {
 
                     getCashierQ().add(QueueRequest.fromLine(line));
-                } else if (line.contains("A:")) {
+                } else if (line.contains("ACCOUNTING")) {
 
                     getAccountQ().add(QueueRequest.fromLine(line));
-                } else if (line.contains("P:")) {
+                } else if (line.contains("PAUSED")) {
 
                     getPauseQ().add(QueueRequest.fromLine(line));
-                } else if (line.contains("R:")) {
+                } else if (line.contains("REGISTRAR")) {
 
                     getRegistarQ().add(QueueRequest.fromLine(line));
                 }
@@ -155,8 +165,9 @@ public class QueueSystem {
 
             if (emptyDisplay(getCashierQ())) return;
 
-            QueueRequest pos = getCashierQ().peek();
+            QueueRequest pos = getCashierQ().poll();
             updateInfo(pos, "Paused", "CASHIER", date);
+            getPauseQ().add(pos);
             writeChange(pos);
 
         }
@@ -221,10 +232,108 @@ public class QueueSystem {
             
         }
 
+
+        public List<QueueRequest> lookForState(String state, LinkedList<QueueRequest> queue) {
+            ArrayList<QueueRequest> qr = new ArrayList<>();
+
+            for (QueueRequest request : queue) {
+                if (emptyDisplay(queue)) return null;
+                else if (request.getState().equals(state)) {
+                    qr.add(request);
+                }
+            }
+            if (qr.isEmpty()) return null;
+            return qr;
+        }
+
+        public List<List<QueueRequest>> queueStates(List<QueueRequest> queue) {
+            ArrayList<String> states = new ArrayList<>();
+            ArrayList<QueueRequest> qr;
+            ArrayList<List<QueueRequest>> stateList = new ArrayList<>();
+
+            for (QueueRequest request : queue) {
+                if (queue.isEmpty()) {
+                    return null; 
+                }
+                
+                else if (!states.contains(request.getState())) {
+                    qr = new ArrayList<>();
+                    String compare = request.getState();
+
+                    for (QueueRequest request2 : queue) {
+                        if (request.getState().equals(compare)) {
+                            qr.add(request2);
+                        }
+                    }
+
+                    stateList.add(qr);
+                    states.add(request.getState());
+                }
+            }
+
+            return stateList;
+        }
+
+        public static class ViewQueue {
+
+            public ViewQueue(List<QueueRequest> queue, boolean willDisplayHeader) {
+                
+                if (queue.isEmpty()) {
+                    empty();
+                    return;
+                }
+
+                if (willDisplayHeader) viewDisplay();
+
+                for (QueueRequest request : queue) {
+                    requestFormat(request);
+                }
+
+            }
+
+            public ViewQueue(List<List<QueueRequest>> queue) {
+
+                if (queue.isEmpty()) {
+                    empty();
+                    return;
+                }
+
+                viewDisplay();
+
+                for (List<QueueRequest> stateList : queue) {
+
+                    for (QueueRequest request : stateList) {
+                        requestFormat(request);
+                    }
+                }
+            }
+
+            // UI
+            private void viewDisplay() {
+                System.out.println("------------------");
+                System.out.println("     Request Queue");
+                System.out.println("------------------");
+                System.out.printf("  %-7s  |  %-12s  |  %-15s  |   %-15s  |  %-7s  |  %s%n", "Request", "Student","Document", "Date & Time", "Price", " Status");
+            }
+
+            private void empty() {
+                System.out.println("----------------------------");
+                System.out.println("     No items in queue to be read");
+                System.out.println("-----------------------------");
+            }
+
+            private void requestFormat(QueueRequest request) {
+
+                System.out.printf("  %-7s  |  %-12s  |  %-15s  |   %-15s  |  %-7s  |  %s%n", request.getId(), request.getStNum(), request.getDocument(), request.getDocument(), "", request.getState());
+
+            }
+
+        }
+            
     }
 
     // ~~~~~~~~~~~~~~~~~~~~
-    // Queue Manager Class
+    // History Manager Class
     // ~~~~~~~~~~~~~~~~~~~~
     public class HistoryManager extends DocuHandler {
 
@@ -233,22 +342,155 @@ public class QueueSystem {
             return "history.txt";
         }
 
-        //TODO: eto`
-        public void displayHistory(String fromWindow) {
-            read();
-        }
-
         public void appendHist(QueueRequest request) {
-            String line = String.format("%s,%s,%s,%s,%s", request.getWindow(), request.getId(), request.getStNum(), request.getDate(),request.getState());
+            String line = String.format("%s,%s,%s,%s,%s,%s", request.getWindow(), request.getId(), request.getStNum(),request.getDocument(), request.getDate(), request.getState());
             append(line);
         }
 
         // For cashier payments TODO:ibahin data type payment if necessary
         public void appendHist(QueueRequest request, float payment) {
-            String line = String.format("%s,%s,%s,%s,%s,%f", "CASHIER", request.getId(), request.getStNum(), request.getDate(), request.getState(), payment);
+            String line = String.format("%s,%s,%s,%s,%s,%s,%f", "CASHIER", request.getId(), request.getStNum(),request.getDocument(), request.getDate(), request.getState(), payment);
             append(line);
         }
-    }
 
+        public int countEntry(String window) {
+            List<String> list = read();
+
+            int i = 0;
+            for (String line : list) {
+                if (line.contains(window)) {
+                    i++;
+                }
+            }
+            i = (i + 24) / 25;
+            return i;
+        }
+
+        public int countEntry() {
+            List<String> list = read();
+
+            int i = (list.size() + 24) / 25;
+            return i;
+        }
+
+        public static class ViewHistory {
+
+            // Display all
+            public ViewHistory(List<String> list, int page) {
+
+                if (list.isEmpty()) {
+                    empty();
+                    return;
+                }
+
+                viewDisplay();
+                int pageCount = (list.size() + 24) / 25; // ceiling division idk nahanap ko lang
+                int items = 0;
+                for (String line : list) {
+                    items++;
+
+                    // Checks items' upperbound and lowerbound
+                    if (items > (page - 1) * 25) {
+                        continue; 
+                    }else if (items <= page * 25) {
+                        return;
+                    }
+
+                    request(line);
+
+                }
+
+                prompt(pageCount, page);
+            }
+
+            // Display some
+            public ViewHistory(List<String> list, int page, String window) {
+
+                if (list.isEmpty()) {
+                    empty();
+                    return;
+                }
+
+                ArrayList<String> filtered = new ArrayList<>();
+                for (String line : list) {
+                    if (checkWindow(window, line)) {
+                        filtered.add(line);
+                    }
+                }
+
+                if (filtered.isEmpty()) {
+                    empty();
+                    return;
+                }
+
+                viewDisplay();
+                int items = 0;
+                int pageCount = (filtered.size() + 24) / 25;
+
+                for (String line : filtered) {
+
+                    items++;
+
+                    // Checks items' upperbound and lowerbound
+                    if (items < (page - 1) * 25) {
+                        continue; 
+                    }else if (items >= page * 25) {
+                        return;
+                    }
+
+                    request(line);
+
+                }
+
+                prompt(pageCount, page);
+            }
+
+            // UI
+            private void viewDisplay() {
+                System.out.println("------------------");
+                System.out.println("     History");
+                System.out.println("------------------");
+                System.out.printf("  %-13s  |  %-7s  |  %-12s  |  %-15s  |   %-15s  |  %-7s  |  %s%n", "Window", "Request", "Student", "Document", "Date & Time", "Price", " Status");
+            }
+
+            private void empty() {
+                System.out.println("----------------------------");
+                System.out.println("     No items in history to be read");
+                System.out.println("-----------------------------");
+            }
+
+            private void request(String item) {
+                String parts[] = item.split(",");
+
+                if (parts.length == 7) {
+                    System.out.printf("  %-13s  |  %-7s  |  %-12s  |  %-15s  |   %-15s  |  %-7s  |  %s%n", parts[0], parts[1], parts[2], parts[3], parts[4], parts[6], parts[5]);
+                } else {
+                    System.out.printf("  %-13s  |  %-7s  |  %-12s  |  %-15s  |   %-15s  |  %-7s  |  %s%n", parts[0], parts[1], parts[2], parts[3], parts[4], "", parts[5]);
+                }
+            }
+
+            private void prompt(int pageCount, int page) {
+                System.out.println("----------------------------");
+                if (pageCount == 1) {
+                    System.out.println(" Viewing page " + page);
+                } else {
+                    System.out.println(" Viewing page " + page + " out of " + pageCount);
+                }
+
+            }
+
+            private boolean checkWindow(String window, String line) {
+                if (line.contains(window)) {
+                    return true; 
+                }else {
+                    return false;
+                }
+            }
+
+        }
+    }
 }
+
+
+
 
