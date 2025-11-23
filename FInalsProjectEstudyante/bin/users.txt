@@ -4,3 +4,4 @@ a1,a1pass,ACCOUNTING,Accounting1
 r1,r1pass,REGISTRAR,Registrar1
 admin,adminpass,ADMIN,ADMINISTRATOR
 s2,s2pass,STUDENT,02000-160420,Jester Poblete
+Roland,LORuina,STUDENT,02000-456512,Roland Orlando

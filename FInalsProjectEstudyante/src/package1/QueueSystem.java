@@ -171,7 +171,7 @@ public class QueueSystem {
             if (emptyDisplay(getCashierQ())) return;
 
             QueueRequest pos = getCashierQ().poll();
-            updateInfo(pos, "Paused", "CASHIER", date);
+            updateInfo(pos, "Paused", "PAUSED", date);
             getPauseQ().add(pos);
             writeChange(pos);
 
@@ -208,6 +208,21 @@ public class QueueSystem {
             
         }
 
+        //TODO: eto
+        // Move request in cashier, and add price
+        public void moveToWindow(String price, String date) {
+
+            if (emptyDisplay(getCashierQ())) {
+                return;
+            }
+
+            QueueRequest pos = getCashierQ().poll();
+            getAccountQ().add(pos);
+            updateInfo(pos, "Paid", "ACCOUNTING", date);
+            writeChange(pos);
+
+        }
+
         // Dequeues request at head
         public void dequeue(String state, String window, String date, LinkedList<QueueRequest> queue) {
 
@@ -230,7 +245,7 @@ public class QueueSystem {
                     QueueRequest qr = new QueueRequest(id, part[1], part[2], part[3], "CASHIER", part[4], price);
                     getCashierQ().add(qr);
                     writeQ();
-                    getHistoryManager().appendHist(qr);
+                    getHistoryManager().appendHist(qr, price);
                     break;
                 }
 
@@ -258,7 +273,7 @@ public class QueueSystem {
             ArrayList<List<QueueRequest>> stateList = new ArrayList<>();
 
             for (QueueRequest request : queue) {
-                if (queue.isEmpty()) {
+                if (queue == null ||queue.isEmpty()) {
                     return null; 
                 }
                 
@@ -285,9 +300,9 @@ public class QueueSystem {
 
         // Load certain states of request in queue, returns true if queue isn't empty
         public boolean loadViewQueue(LinkedList<QueueRequest> queue, boolean willDisplayHeader, String state) {
-            if (queue.isEmpty()) return false;
+            if (queue == null || queue.isEmpty()) return false;
             List<QueueRequest> filtered = lookForState(state, queue);
-            if (filtered.isEmpty()) return false;
+            if (filtered == null || filtered.isEmpty()) return false;
             ViewQueue vq = new ViewQueue(filtered, willDisplayHeader);
             return true;
         }
@@ -295,7 +310,7 @@ public class QueueSystem {
 
         // Load all states of a queue, returns true if queue isn't empty
         public boolean loadViewQueue(List<QueueRequest> queue) {
-            if (queue.isEmpty()) return false;
+            if (queue == null || queue.isEmpty()) return false;
             ViewQueue vq = new ViewQueue(queueStates(queue));
             return true;
         }
@@ -326,13 +341,14 @@ public class QueueSystem {
             }
 
             // UI
-            private void viewDisplay() {
-                System.out.printf("  %-7s  |  %-12s  |  %-15s  |   %-25s  |  %-7s  |  %s%n", "Request", "Student","Document", "Date & Time", "Price", " Status");
+            public void viewDisplay() {
+                System.out.printf("  %-7s  |  %-12s  |  %-25s  |   %-20s  |  %-7s  |  %s%n", "Request", "Student","Document", "Date & Time", "Price", " Status");
             }
 
-            private void requestFormat(QueueRequest request) {
 
-                System.out.printf("  %-7s  |  %-12s  |  %-15s  |   %-25s  |  %-7s  |  %s%n", request.getId(), request.getStNum(), request.getDocument(), request.getDocument(), "", request.getState());
+            public void requestFormat(QueueRequest request) {
+
+                System.out.printf("  %-7s  |  %-12s  |  %-25s  |   %-20s  |  %-7s  |  %s%n", request.getId(), request.getStNum(), request.getDocument(), request.getDate(), "", request.getState());
 
             }
 
@@ -355,7 +371,7 @@ public class QueueSystem {
             append(line);
         }
 
-        // For cashier payments TODO:ibahin data type payment if necessary
+        // For cashier payments
         public void appendHist(QueueRequest request, String payment) {
             String line = String.format("%s,%s,%s,%s,%s,%s,%s", "CASHIER", request.getId(), request.getStNum(),request.getDocument(), request.getDate(), request.getState(), payment);
             append(line);
@@ -471,9 +487,9 @@ public class QueueSystem {
                 String parts[] = item.split(",");
 
                 if (parts.length == 7) {
-                    System.out.printf("  %-13s  |  %-7s  |  %-12s  |  %-15s  |   %-25s  |  %-7s  |  %s%n", parts[0], parts[1], parts[2], parts[3], parts[4], parts[6], parts[5]);
+                    System.out.printf("  %-13s  |  %-7s  |  %-12s  |  %-25s  |   %-20s  |  %-7s  |  %s%n", parts[0], parts[1], parts[2], parts[3], parts[4], parts[6], parts[5]);
                 } else {
-                    System.out.printf("  %-13s  |  %-7s  |  %-12s  |  %-15s  |   %-25s  |  %-7s  |  %s%n", parts[0], parts[1], parts[2], parts[3], parts[4], "", parts[5]);
+                    System.out.printf("  %-13s  |  %-7s  |  %-12s  |  %-25s  |   %-20s  |  %-7s  |  %s%n", parts[0], parts[1], parts[2], parts[3], parts[4], "", parts[5]);
                 }
             }
 
