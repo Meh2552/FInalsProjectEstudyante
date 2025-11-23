@@ -92,4 +92,9 @@ public class Registrar extends Employee
         
         System.out.println("Released.");
     }
+
+    @Override
+    public void displayRequest() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

@@ -102,4 +102,9 @@ public class Accounting extends Employee
         
         System.out.println("Updated.");
     }
+
+    @Override
+    public void displayRequest() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

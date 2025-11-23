@@ -75,11 +75,11 @@ public abstract class Employee extends User
 
     public abstract void displayRequest();
 
-    public void requestManager() {
+    public void requestManager(String prompt) {
 
         displayRequest();
 
-        
+        System.out.println(prompt);
     }
 
     public void historyMenu() {

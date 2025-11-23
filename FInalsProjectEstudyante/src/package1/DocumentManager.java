@@ -42,17 +42,17 @@ public class DocumentManager extends DocuHandler
     public void changeState(String id, String state) {
 
         List<DocumentRequest> list = loadAll();
+        ArrayList<DocumentRequest> temp = new ArrayList<>();
 
         for (DocumentRequest request : list) {
             if (request != null) {
                 if (request.getId().equals(id)) request.setStatus(state);
-
-                else list.add(request);
+                temp.add(request);
                 
             }
         }
 
-        saveAll(list);
+        saveAll(temp);
 
     }
 

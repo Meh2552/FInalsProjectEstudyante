@@ -4,6 +4,8 @@ import java.util.*;
 
 public class QueueSystem {
 
+    private static boolean loaded = false;
+
     private DocumentManager docuMan;
     private QueueManager queueMan;
     private HistoryManager histMan;
@@ -25,14 +27,17 @@ public class QueueSystem {
         this.queueMan = new QueueManager();
         this.histMan = new HistoryManager();
 
-        this.queueMan.loadQ();
+        if (!loaded) {
+            this.queueMan.loadQ();
+            loaded = true;
+        }
 
     }
 
-    public QueueSystem(String id) {
+    public QueueSystem(String id, String price) {
         this();
 
-        this.queueMan.enqueueNew(id);
+        this.queueMan.enqueueNew(id, price);
     }
 
     public QueueSystem(int page, String window) {
@@ -124,7 +129,7 @@ public class QueueSystem {
             write(lines);
         }
 
-        public void writeChange(QueueRequest request) { // Writes to queue file and history file
+        public void writeChange(QueueRequest request) { // Writes to queue file, history file and docu
             writeQ();
             getHistoryManager().appendHist(request);
             getDocumentManager().changeState(request.getId(), request.getState());
@@ -214,7 +219,7 @@ public class QueueSystem {
 
         }
 
-        public void enqueueNew(String id) {
+        public void enqueueNew(String id, String price) {
 
             List<String> all = getDocumentManager().read();
 
@@ -222,9 +227,10 @@ public class QueueSystem {
                 String[] part = lines.split(",");
 
                 if (part.length > 0 && part[5].equals(id)) {
-                    QueueRequest qr = new QueueRequest(id, part[1], part[2], part[3], "CASHIER", part[4]);
+                    QueueRequest qr = new QueueRequest(id, part[1], part[2], part[3], "CASHIER", part[4], price);
                     getCashierQ().add(qr);
-                    writeChange(qr);
+                    writeQ();
+                    getHistoryManager().appendHist(qr);
                     break;
                 }
 
@@ -277,27 +283,27 @@ public class QueueSystem {
             return stateList;
         }
 
-        // Load certain states of request in queue 
-        public void loadViewQueue(LinkedList<QueueRequest> queue, boolean willDisplayHeader, String state) {
+        // Load certain states of request in queue, returns true if queue isn't empty
+        public boolean loadViewQueue(LinkedList<QueueRequest> queue, boolean willDisplayHeader, String state) {
+            if (queue.isEmpty()) return false;
             List<QueueRequest> filtered = lookForState(state, queue);
+            if (filtered.isEmpty()) return false;
             ViewQueue vq = new ViewQueue(filtered, willDisplayHeader);
+            return true;
         }
 
 
-        // Load all states of a queue
-        public void loadViewQueue(List<QueueRequest> queue) {
+        // Load all states of a queue, returns true if queue isn't empty
+        public boolean loadViewQueue(List<QueueRequest> queue) {
+            if (queue.isEmpty()) return false;
             ViewQueue vq = new ViewQueue(queueStates(queue));
+            return true;
         }
 
 
         public static class ViewQueue {
 
             public ViewQueue(List<QueueRequest> queue, boolean willDisplayHeader) {
-                
-                if (queue.isEmpty()) {
-                    empty();
-                    return;
-                }
 
                 if (willDisplayHeader) viewDisplay();
 
@@ -308,11 +314,6 @@ public class QueueSystem {
             }
 
             public ViewQueue(List<List<QueueRequest>> queue) {
-
-                if (queue.isEmpty()) {
-                    empty();
-                    return;
-                }
 
                 viewDisplay();
 
@@ -326,16 +327,7 @@ public class QueueSystem {
 
             // UI
             private void viewDisplay() {
-                System.out.println("------------------");
-                System.out.println("     Request Queue");
-                System.out.println("------------------");
                 System.out.printf("  %-7s  |  %-12s  |  %-15s  |   %-25s  |  %-7s  |  %s%n", "Request", "Student","Document", "Date & Time", "Price", " Status");
-            }
-
-            private void empty() {
-                System.out.println("----------------------------");
-                System.out.println("     No items in queue to be read");
-                System.out.println("-----------------------------");
             }
 
             private void requestFormat(QueueRequest request) {
@@ -364,8 +356,8 @@ public class QueueSystem {
         }
 
         // For cashier payments TODO:ibahin data type payment if necessary
-        public void appendHist(QueueRequest request, float payment) {
-            String line = String.format("%s,%s,%s,%s,%s,%s,%f", "CASHIER", request.getId(), request.getStNum(),request.getDocument(), request.getDate(), request.getState(), payment);
+        public void appendHist(QueueRequest request, String payment) {
+            String line = String.format("%s,%s,%s,%s,%s,%s,%s", "CASHIER", request.getId(), request.getStNum(),request.getDocument(), request.getDate(), request.getState(), payment);
             append(line);
         }
 

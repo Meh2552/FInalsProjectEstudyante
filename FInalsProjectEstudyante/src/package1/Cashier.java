@@ -20,20 +20,21 @@ public class Cashier extends Employee
         while (true)
         {
             System.out.println("\n=== CASHIER MENU ===");
-            System.out.println("[1] View Pending Payments");
+            System.out.println("[1] View Request Status");
             System.out.println("[2] Manage Requests");
             System.out.println("[3] Manage History");
+            // TODO: reciepts
             System.out.println("[4] Logout");
-            int choice = system.validate().menuChoice("Choose: ", 3);
+            int choice = system.validate().menuChoice("Choose: ", 4);
             
             if (choice == 1)
             {
-            	viewPending();
+            	requestStatus();
             }
             
             else if (choice == 2)
             {
-            	markPaid();
+                requestManager("X - Go Back, 1 - Select request at top, 2 - Pause request at top, 3 - Unpause request, 4 - Cancel request");
             }
 
             else if (choice == 3)
@@ -48,61 +49,50 @@ public class Cashier extends Employee
         }
     }
 
-    private void viewPending() 
-    {
-        List<DocumentRequest> all = dm.loadAll();
-        
-        boolean found = false;
-   
+    LinkedList<QueueRequest> cashierQ = QueueSystem.getCashierQ();
+    LinkedList<QueueRequest> pauseQ = QueueSystem.getPauseQ();
+    QueueSystem qs = system.queueSystem();
+    QueueSystem.QueueManager qm = qs.getQueueManager();
+
+    @Override
+    public void displayRequest() {
         System.out.println("=== PENDING ===");
-        
-        for (DocumentRequest r : all) 
-        {
-            if ("Pending Payment".equals(r.getStatus())) 
-            {
-                System.out.println("- " + r.getDocName() + " | " + r.getStudentNum());
-                found = true;
-            }
-        }
-        
-        if (!found)
-        {
-        	System.out.println("No pending payments.");
+        boolean found = qm.loadViewQueue(cashierQ, true, "Pending Payment");
+        if (!found) {
+            System.out.println("No pending payments.");
         }
     }
 
-    private void markPaid() 
-    {
-        List<DocumentRequest> all = dm.loadAll();
-        
-        ArrayList<DocumentRequest> pending = new ArrayList<DocumentRequest>();
-        
-        for (DocumentRequest req : all) 
-        {
-            if ("Pending Payment".equals(req.getStatus()))
-            {
-            	pending.add(req);
+    private void requestStatus() {
+        displayRequest();
+
+        System.out.println("----  PAUSED  ----");
+        boolean found2 = qm.loadViewQueue(pauseQ);
+        if (!found2) {
+            System.out.println("No paused payments.");
+        }
+
+        boolean found = qm.loadViewQueue(cashierQ, true, "Paid");
+        if (!found) {
+            System.out.println("No pending payments.");
+        }
+    }
+
+    @Override
+    public void requestManager(String prompt) {
+        while (true) {
+
+            super.requestManager(prompt);
+            int select = system.validate().minMaxXChoice(prompt, 1, 5);
+            if (select == -1) return;
+
+            switch(select) {
+
+                case 1:
+                break;
             }
+
         }
-        
-        if (pending.size() == 0) 
-        {
-            System.out.println("No pending.");
-            return;
-        }
-        
-        for (int i = 0; i < pending.size(); i++) 
-        {
-            System.out.println("[" + (i+1) + "] " + pending.get(i).getDocName() + " (" + pending.get(i).getStudentNum() + ")");
-        }
-        
-        int sel = system.validate().menuChoice("Select: ", pending.size());
-        
-        DocumentRequest selReq = pending.get(sel - 1);
-        
-        selReq.setStatus("Paid");
-        dm.saveAll(all);
-        
-        System.out.println("Marked Paid.");
+
     }
 }

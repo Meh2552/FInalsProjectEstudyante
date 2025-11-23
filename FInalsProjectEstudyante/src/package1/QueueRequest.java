@@ -2,9 +2,9 @@ package package1;
 
 public class QueueRequest {
 
-    private String id, stNum, document, state, date, window;
+    private String id, stNum, document, state, date, window, price;
 
-    public QueueRequest (String id, String stNum, String document, String state, String window, String date){
+    public QueueRequest (String id, String stNum, String document, String state, String window, String date, String price){
 
         this.date = date;
         this.document = document;
@@ -12,6 +12,7 @@ public class QueueRequest {
         this.state = state;
         this.id = id;
         this.window = window;
+        this.price = price;
 
     }
 
@@ -50,17 +51,25 @@ public class QueueRequest {
     public void setDate(String date) {
         this.date = date;
     }
+
+    public String getPrice() {
+        return price;
+    }
+
+    public void setPricee(String price) {
+        this.price = price;
+    }
     
     public String toFileLine() {
-        return getId() + "," + getStNum() + "," + getDocument() + "," + getState() + "," + getWindow() + "," + getDate();
+        return getId() + "," + getStNum() + "," + getDocument() + "," + getState() + "," + getWindow() + "," + getDate() + "," + getPrice();
     }
 
     public static QueueRequest fromLine(String line) {
-        String[] p = line.split(",", 6);
+        String[] p = line.split(",", 7);
         if (p.length < 5) {
             return null;
         }
-        return new QueueRequest(p[0], p[1], p[2], p[3], p[4], p[5]);
+        return new QueueRequest(p[0], p[1], p[2], p[3], p[4], p[5], p[6]);
     }
 
 }

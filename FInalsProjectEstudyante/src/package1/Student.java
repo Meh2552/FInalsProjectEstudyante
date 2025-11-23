@@ -64,7 +64,8 @@ public class Student extends User
     private void requestDocument() 
     {
 
-        String doc;
+        // TODO: change the price
+        String doc, price;
         while (true) {
 
             System.out.println("[1] SF10");
@@ -79,21 +80,25 @@ public class Student extends User
             if (choice == 1) 
             {
                 doc = "SF10";
+                price = "100";
             } 
             
             else if (choice == 2) 
             {
                 doc = "Form137";
+                price = "101";
             } 
             
             else if (choice == 3) 
             {
                 doc = "Good Moral";
+                price = "102";
             } 
             
             else if (choice == 4) 
             {
                 doc = "Enrollment Certificate";
+                price = "104";
             }
 
             else if (choice == 5) {
@@ -123,7 +128,7 @@ public class Student extends User
 
         DocumentRequest request = new DocumentRequest(record.getUsername(), record.getStudentNum(), doc, "Pending Payment", system.genDate(), dm.genId());
         dm.addRequest(request);
-        QueueSystem qs = new QueueSystem(request.getId());
+        QueueSystem qs = new QueueSystem(request.getId(), price);
         
         System.out.println("Request submitted.");
     }
