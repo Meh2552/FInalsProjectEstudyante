@@ -39,7 +39,7 @@ public class QueueSystem {
         this();
 
         List<String> list = getHistoryManager().read();
-        HistoryManager.ViewHistory vh = new HistoryManager.ViewHistory(list, 1, window);
+        HistoryManager.ViewHistory vh = new HistoryManager.ViewHistory(list, page, window);
     }
 
     public QueueSystem(int page) {
@@ -271,6 +271,9 @@ public class QueueSystem {
                 }
             }
 
+            Collections.sort(stateList, (a, b) ->
+                a.get(0).getState().compareToIgnoreCase(b.get(0).getState())
+            );
             return stateList;
         }
 
@@ -326,7 +329,7 @@ public class QueueSystem {
                 System.out.println("------------------");
                 System.out.println("     Request Queue");
                 System.out.println("------------------");
-                System.out.printf("  %-7s  |  %-12s  |  %-15s  |   %-15s  |  %-7s  |  %s%n", "Request", "Student","Document", "Date & Time", "Price", " Status");
+                System.out.printf("  %-7s  |  %-12s  |  %-15s  |   %-25s  |  %-7s  |  %s%n", "Request", "Student","Document", "Date & Time", "Price", " Status");
             }
 
             private void empty() {
@@ -337,7 +340,7 @@ public class QueueSystem {
 
             private void requestFormat(QueueRequest request) {
 
-                System.out.printf("  %-7s  |  %-12s  |  %-15s  |   %-15s  |  %-7s  |  %s%n", request.getId(), request.getStNum(), request.getDocument(), request.getDocument(), "", request.getState());
+                System.out.printf("  %-7s  |  %-12s  |  %-15s  |   %-25s  |  %-7s  |  %s%n", request.getId(), request.getStNum(), request.getDocument(), request.getDocument(), "", request.getState());
 
             }
 
@@ -403,10 +406,10 @@ public class QueueSystem {
                     items++;
 
                     // Checks items' upperbound and lowerbound
-                    if (items > (page - 1) * 25) {
+                    if (items < (page - 1) * 25) {
                         continue; 
-                    }else if (items <= page * 25) {
-                        return;
+                    }else if (items >= page * 25) {
+                        break;
                     }
 
                     request(line);
@@ -448,7 +451,7 @@ public class QueueSystem {
                     if (items < (page - 1) * 25) {
                         continue; 
                     }else if (items >= page * 25) {
-                        return;
+                        break;
                     }
 
                     request(line);
@@ -476,9 +479,9 @@ public class QueueSystem {
                 String parts[] = item.split(",");
 
                 if (parts.length == 7) {
-                    System.out.printf("  %-13s  |  %-7s  |  %-12s  |  %-15s  |   %-15s  |  %-7s  |  %s%n", parts[0], parts[1], parts[2], parts[3], parts[4], parts[6], parts[5]);
+                    System.out.printf("  %-13s  |  %-7s  |  %-12s  |  %-15s  |   %-25s  |  %-7s  |  %s%n", parts[0], parts[1], parts[2], parts[3], parts[4], parts[6], parts[5]);
                 } else {
-                    System.out.printf("  %-13s  |  %-7s  |  %-12s  |  %-15s  |   %-15s  |  %-7s  |  %s%n", parts[0], parts[1], parts[2], parts[3], parts[4], "", parts[5]);
+                    System.out.printf("  %-13s  |  %-7s  |  %-12s  |  %-15s  |   %-25s  |  %-7s  |  %s%n", parts[0], parts[1], parts[2], parts[3], parts[4], "", parts[5]);
                 }
             }
 

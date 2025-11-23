@@ -73,6 +73,15 @@ public abstract class Employee extends User
         }
     }
 
+    public abstract void displayRequest();
+
+    public void requestManager() {
+
+        displayRequest();
+
+        
+    }
+
     public void historyMenu() {
 
         while (true) {
