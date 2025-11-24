@@ -65,7 +65,7 @@ public class QueueRequest {
     }
 
     public static QueueRequest fromLine(String line) {
-        String[] p = line.split(",", 7);
+        String[] p = line.split(",");
         if (p.length < 5) {
             return null;
         }

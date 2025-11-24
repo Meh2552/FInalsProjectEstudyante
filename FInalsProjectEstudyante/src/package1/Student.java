@@ -147,7 +147,7 @@ public class Student extends User
             if (req.getStudentNum() != null && req.getStudentNum().equals(record.getStudentNum())) 
             {
                 System.out.println("-".repeat(50));
-                System.out.println("   REQUEST: " + req.getDate()); //TODO: change to
+                System.out.printf("   REQUEST: %-10s            %s%n", req.getId(), req.getDate()); //TODO: change to
                 System.out.printf("%n   REQUESTED DOCUMENT: %-15s  %s%n"  ,req.getDocName(), req.getStatus());
                 found = true;
             }

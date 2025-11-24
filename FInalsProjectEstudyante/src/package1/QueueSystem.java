@@ -40,18 +40,18 @@ public class QueueSystem {
         this.queueMan.enqueueNew(id, price);
     }
 
-    public QueueSystem(int page, String window) {
+    public QueueSystem(int page, List<String> statements) {
         this();
 
         List<String> list = getHistoryManager().read();
-        HistoryManager.ViewHistory vh = new HistoryManager.ViewHistory(list, page, window);
+        HistoryManager.ViewHistory vh = new HistoryManager.ViewHistory(list, page, statements);
     }
 
     public QueueSystem(int page) {
         this();
 
         List<String> list = getHistoryManager().read();
-        HistoryManager.ViewHistory vh = new HistoryManager.ViewHistory(list, 1);
+        HistoryManager.ViewHistory vh = new HistoryManager.ViewHistory(list, page);
     }
 
 
@@ -77,9 +77,9 @@ public class QueueSystem {
     }
 
     // Used for display when queue is empty
-    protected boolean emptyDisplay(LinkedList<QueueRequest> queue) {
+    protected boolean emptyDisplay(LinkedList<QueueRequest> queue, String message) {
         if (queue.isEmpty()) {
-            System.out.println("The queue is empty");
+            System.out.println(message);
             return true;
         }
         return false;
@@ -168,7 +168,7 @@ public class QueueSystem {
         // Pauses a request
         public void pause(String date) {
 
-            if (emptyDisplay(getCashierQ())) return;
+            if (emptyDisplay(getCashierQ(), "No such requests found")) return;
 
             QueueRequest pos = getCashierQ().poll();
             updateInfo(pos, "Paused", "PAUSED", date);
@@ -179,27 +179,27 @@ public class QueueSystem {
 
         // Unpauses the 'n'th request that is in pause queue, use menuChoice for index
         // example index is 3, it removes the 'n'th (3rd) request in the pause queue
-        public void unpause(String state, String date, boolean wasPaid, int index) {
+        public QueueRequest unpause(String state, String date, boolean wasPaid, int index) {
 
-            if (emptyDisplay(getPauseQ())) return;
+            if (emptyDisplay(getPauseQ(), "No such requests found")) return null;
 
-            QueueRequest pos = getPauseQ().remove(index);
+            QueueRequest pos = getPauseQ().get(index);
             
             if (wasPaid) {
-                updateInfo(pos, "Paid", "ACCOUNTING", date);
-                getAccountQ().add(pos);
+                return pos;
             }
 
             else updateInfo(pos, state, "CASHIER", date);
             
+            getPauseQ().remove(index);
             writeChange(pos);
-
+            return null;
         }
 
         // Move request to next window/request state 
         public void moveToWindow(String state, String window, String date, LinkedList<QueueRequest> from, LinkedList<QueueRequest> to) {
 
-            if (emptyDisplay(from)) return;
+            if (emptyDisplay(from, "No such requests found")) return;
 
             QueueRequest pos = from.poll();
             to.add(pos);
@@ -208,15 +208,13 @@ public class QueueSystem {
             
         }
 
-        //TODO: eto
-        // Move request in cashier, and add price
-        public void moveToWindow(String price, String date) {
+        // Move request in cashier or paused queue, 0 for cashier, other means pause
+        public void moveToWindow(String date, int index) {
 
-            if (emptyDisplay(getCashierQ())) {
-                return;
-            }
-
-            QueueRequest pos = getCashierQ().poll();
+            QueueRequest pos;
+            if (index == -1) pos = getCashierQ().poll();
+            else pos = getPauseQ().remove(index);
+            
             getAccountQ().add(pos);
             updateInfo(pos, "Paid", "ACCOUNTING", date);
             writeChange(pos);
@@ -226,7 +224,7 @@ public class QueueSystem {
         // Dequeues request at head
         public void dequeue(String state, String window, String date, LinkedList<QueueRequest> queue) {
 
-            if (emptyDisplay(queue)) return;
+            if (emptyDisplay(queue, "No such requests found")) return;
 
             QueueRequest pos = queue.poll();
             updateInfo(pos, state, window, date);
@@ -258,7 +256,7 @@ public class QueueSystem {
             ArrayList<QueueRequest> qr = new ArrayList<>();
 
             for (QueueRequest request : queue) {
-                if (emptyDisplay(queue)) return null;
+                if (emptyDisplay(queue, "No such requests found")) return null;
                 else if (request.getState().equals(state)) {
                     qr.add(request);
                 }
@@ -377,13 +375,16 @@ public class QueueSystem {
             append(line);
         }
 
-        public int countEntry(String window) {
+        public int countEntry(List<String> statements) {
             List<String> list = read();
 
             int i = 0;
             for (String line : list) {
-                if (line.contains(window)) {
+                for (String tag : statements) {
+                if (line.contains(tag)) {
                     i++;
+                    break;
+                }
                 }
             }
             i = (i + 24) / 25;
@@ -397,8 +398,10 @@ public class QueueSystem {
             return i;
         }
 
+        // TODO: backwards display para latest una
         public static class ViewHistory {
 
+            // TODO: history chage to medyo 
             // Display all
             public ViewHistory(List<String> list, int page) {
 
@@ -427,8 +430,8 @@ public class QueueSystem {
                 prompt(pageCount, page);
             }
 
-            // Display some
-            public ViewHistory(List<String> list, int page, String window) {
+            // Display some, filters for lines that contain ONE of the statements, not 
+            public ViewHistory(List<String> list, int page, List<String> statements) {
 
                 if (list.isEmpty()) {
                     empty();
@@ -436,11 +439,16 @@ public class QueueSystem {
                 }
 
                 ArrayList<String> filtered = new ArrayList<>();
+
                 for (String line : list) {
-                    if (checkWindow(window, line)) {
+                    for (String tag : statements) {
+                    if (checkStatement(tag, line)) {
                         filtered.add(line);
+                        break;
+                    }
                     }
                 }
+
 
                 if (filtered.isEmpty()) {
                     empty();
@@ -448,6 +456,7 @@ public class QueueSystem {
                 }
 
                 viewDisplay();
+                
                 int items = 0;
                 int pageCount = (filtered.size() + 24) / 25;
 
@@ -471,9 +480,6 @@ public class QueueSystem {
 
             // UI
             private void viewDisplay() {
-                System.out.println("------------------");
-                System.out.println("     History");
-                System.out.println("------------------");
                 System.out.printf("  %-13s  |  %-7s  |  %-12s  |  %-15s  |   %-15s  |  %-7s  |  %s%n", "Window", "Request", "Student", "Document", "Date & Time", "Price", " Status");
             }
 
@@ -503,8 +509,8 @@ public class QueueSystem {
 
             }
 
-            private boolean checkWindow(String window, String line) {
-                if (line.contains(window)) {
+            private boolean checkStatement(String text, String line) {
+                if (line.contains(text)) {
                     return true; 
                 }else {
                     return false;

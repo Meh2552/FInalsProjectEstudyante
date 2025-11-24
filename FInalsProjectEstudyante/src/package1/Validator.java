@@ -79,7 +79,6 @@ public class Validator
                 System.out.println("Choose between "+ min + " and " + max);
             } catch (InputMismatchException e) {
                 System.out.println("Invalid input. Enter a number.");
-                system.scan().nextLine();
             }
         }
     }

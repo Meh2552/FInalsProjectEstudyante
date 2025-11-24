@@ -2,7 +2,7 @@ package package1;
 
 import java.util.*;
 
-public abstract class Employee extends User implements HelpdeskResponder
+public abstract class Employee extends User
 {
 
     public Employee(MainSystem system, UserRecord record) 
@@ -18,7 +18,6 @@ public abstract class Employee extends User implements HelpdeskResponder
         employeeMenu();
     }
     
-    @Override
     public void respondToTicket() 
     {
 
@@ -33,13 +32,13 @@ public abstract class Employee extends User implements HelpdeskResponder
 
         while (true) 
         {
-            System.out.println("=== HELPDESK QUEUE (OLD -> NEW) ===");
+            System.out.println("=== SELECT TICKET TO RESPOND ===");
             
             for (int i = 0; i < tickets.size(); i++) 
             {
                 HelpdeskTicket t = tickets.get(i);
                 
-                System.out.println("[" + (i+1) + "] ID:" + t.getId() + " (" + t.getStudentNum() + ") " + t.getIssue() + " | " + t.getDate() + " | Status: " + t.getStatus());
+                System.out.println("[" + (i+1) + "] ID:" + t.getId() + " (" + t.getStudentNum() + ") " + t.getIssue() + " | Status: " + t.getStatus() + " | " + t.getDate());
             }
 
             int sel = system.validate().menuChoice("Select ticket: ", tickets.size());            
@@ -68,33 +67,24 @@ public abstract class Employee extends User implements HelpdeskResponder
 
             chosen.setStatus("Answered");
             system.helpdeskManager().saveTickets(tickets);
-            
-            System.out.println("=== RESPONSE CONFIRMED ===");
-            System.out.println("You replied at: " + ts);
-            System.out.println("Message: " + respMsg);
-            System.out.println("-".repeat(50));
-
 
             System.out.println("Response saved and ticket marked Answered.");
             return;
         }
     }
-    
-    public void viewResponse() 
-    {
+
+    public void viewResponse() {
         String name = record.getFullName();
         List<HelpdeskResponse> list = system.helpdeskResponseManager().loadByResponder(name);
 
-        if (list.size() == 0) 
-        {
+        if (list.size() == 0) {
             System.out.println("You have not responded to any tickets yet.");
             return;
         }
 
         System.out.println("=== YOUR HELP DESK RESPONSE HISTORY ===");
 
-        for (HelpdeskResponse r : list) 
-        {
+        for (HelpdeskResponse r : list) {
             System.out.println("-".repeat(50));
             System.out.println("Ticket ID: " + r.getTicketId());
             System.out.println("Date: " + r.getTime());
@@ -103,17 +93,38 @@ public abstract class Employee extends User implements HelpdeskResponder
         }
     }
 
-
     public abstract void displayRequest();
 
-    public void requestManager(String prompt) {
+    public void requestManager() {
 
         displayRequest();
 
-        System.out.println(prompt);
     }
 
-    public void historyMenu() {
+    public void history(int page, List<String> statements) {
+
+        QueueSystem qs = new QueueSystem(1, statements);
+        int current = 1;
+
+        while (true) {
+            int max = system.queueSystem().getHistoryManager().countEntry(statements);
+            int input = system.validate().minMaxXChoice("Go to page ('x' to go back):", 1, max);
+            if (input == current) {
+                System.out.println("Already on page " + input);
+                continue;
+            }
+            if (input == -1) {
+                return;
+            }
+
+            qs = new QueueSystem(input, statements);
+            current = input;
+
+        }
+
+    }
+
+    public void historyWAGTOWEOJFJOFENFOE() {
 
         while (true) {
 
@@ -152,19 +163,7 @@ public abstract class Employee extends User implements HelpdeskResponder
     }
 
     private void historyDis(String window) {
-        QueueSystem qs = new QueueSystem(1,window);
-        int current = 1;
 
-        while (true) {
-            int max = system.queueSystem().getHistoryManager().countEntry(window);
-            int input = system.validate().minMaxXChoice("Go to page ('x' to go back):", 1, max);
-            if (input == current) System.out.println("Already on page " + input);
-            if (input == -1) return;
-
-            qs = new QueueSystem(input, window);
-            current = input;
-
-        }
     }
 
     private void historyDis() {

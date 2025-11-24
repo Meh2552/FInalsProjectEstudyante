@@ -50,7 +50,19 @@ public class Registrar extends Employee
             
             else if (choice == 5)
             {
-            	return;
+            	respondToTicket();
+            }
+            
+            else if (choice == 6)
+            {
+                //TODO : EDTO
+                ArrayList<String> historyTag = new ArrayList<>();
+                historyTag.add("ACCOUNTING");
+                historyTag.add("Approved");
+                history(1, historyTag);
+            }
+            else if (choice == 7) {
+                return;
             }
         }
     }

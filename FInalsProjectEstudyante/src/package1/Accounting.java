@@ -6,11 +6,17 @@ public class Accounting extends Employee
 {
 
     private DocumentManager dm;
+    private LinkedList<QueueRequest> accQ;
+    private QueueSystem qs;
+    private QueueSystem.QueueManager qm;
 
     public Accounting(MainSystem system, UserRecord record) 
     {
         super(system, record);
         this.dm = system.documentManager();
+        this.accQ = QueueSystem.getAccountQ();
+        this.qs = system.queueSystem();
+        this.qm = system.queueSystem().getQueueManager();
     }
 
     @Override
@@ -30,12 +36,22 @@ public class Accounting extends Employee
             
             if (choice == 1)
             {
-            	viewPaid();
+            	displayRequest();
             }
             
             else if (choice == 2)
             {
-            	processPayment();
+            	requestManager();
+            }
+            
+            else if (choice == 3)
+            {
+            	respondToTicket();
+            }
+            
+            else if (choice == 4)
+            {
+            	viewResponse();
             }
             
             else if (choice == 3)
@@ -50,28 +66,40 @@ public class Accounting extends Employee
             
             else if (choice == 5)	
             {
+                ArrayList<String> historyTag = new ArrayList<>();
+                historyTag.add("ACCOUNTING");
+                historyTag.add("Approved");
+                history(1, historyTag);
             	return;
+            }
+            else if (choice == 4) {
+                return;
             }
         }
     }
 
-    private void viewPaid() 
-    {
-        List<DocumentRequest> all = dm.loadAll();
-        
-        boolean found = false;
-        
-        System.out.println("=== PAID ===");
-        
-        for (DocumentRequest req : all)
-        {
-            if (req.getStatus().equals("Paid")) 
-            {
-                System.out.println("- " + req.getDocName() + " | " + req.getStudentNum());
-                found = true;
-            }
+    @Override
+    public void displayRequest() {
+        System.out.println("----  Current  ----");
+        if (qs.emptyDisplay(accQ, "No requests in queue")) return;
+
+        LinkedList<QueueRequest> temp = new LinkedList<>();
+        temp.add(accQ.peek());
+        qm.loadViewQueue(temp, true, "");
+
+        System.out.println("=== PENDING ===");
+        qm.loadViewQueue(accQ);
+
+    }
+
+    @Override
+    public void requestManager() {
+        while (true) { 
+
+            super.requestManager();
+            
         }
-        if (!found) System.out.println("No paid requests.");
+        
     }
 
     private void processPayment() 
@@ -117,8 +145,4 @@ public class Accounting extends Employee
         System.out.println("Updated.");
     }
 
-    @Override
-    public void displayRequest() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
 }
