@@ -221,12 +221,24 @@ public class QueueSystem {
 
         }
 
+        // Pwede ata merge eto sa taas pero may maiiba lang, for registrar
+        public void moveToWindow(String state, String date, int index) {
+
+            QueueRequest pos = getRegistarQ().remove(index);
+            
+            getAccountQ().add(pos);
+            updateInfo(pos, state, "REGISTRAR", date);
+            writeChange(pos);
+
+        }
+
+
         // Dequeues request at head
-        public void dequeue(String state, String window, String date, LinkedList<QueueRequest> queue) {
+        public void dequeue(String state, String window, String date, LinkedList<QueueRequest> queue, int index) {
 
             if (emptyDisplay(queue, "No such requests found")) return;
 
-            QueueRequest pos = queue.poll();
+            QueueRequest pos = queue.remove(index);
             updateInfo(pos, state, window, date);
             writeChange(pos);
 
@@ -270,29 +282,31 @@ public class QueueSystem {
             ArrayList<QueueRequest> qr;
             ArrayList<List<QueueRequest>> stateList = new ArrayList<>();
 
-            for (QueueRequest request : queue) {
-                if (queue == null ||queue.isEmpty()) {
-                    return null; 
-                }
-                
-                else if (!states.contains(request.getState())) {
-                    qr = new ArrayList<>();
-                    String compare = request.getState();
+            if (queue == null || queue.isEmpty()) {
+                return null;
+            }
 
-                    for (QueueRequest request2 : queue) {
-                        if (request.getState().equals(compare)) {
-                            qr.add(request2);
-                        }
+            for (QueueRequest request : queue) {
+
+                if (!states.contains(request.getState())) {
+
+                    String current = request.getState();
+                    states.add(current);
+                    qr = new ArrayList<>();
+
+                    for(QueueRequest state : queue) {
+                        if (state.getState().equals(current)) qr.add(state);
                     }
 
                     stateList.add(qr);
-                    states.add(request.getState());
+
                 }
-            }
+            }                    
 
             Collections.sort(stateList, (a, b) ->
                 a.get(0).getState().compareToIgnoreCase(b.get(0).getState())
             );
+
             return stateList;
         }
 

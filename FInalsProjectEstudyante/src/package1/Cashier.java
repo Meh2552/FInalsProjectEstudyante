@@ -28,13 +28,12 @@ public class Cashier extends Employee
             System.out.println("\n=== CASHIER MENU ===");
             System.out.println("[1] View Request Status");
             System.out.println("[2] Manage Requests");
-            System.out.println("[3] See History");
-            System.out.println("[4] View Reciepts");
-            System.out.println("[5] Respond to Helpdesk");
-            System.out.println("[6] View Helpdesk Responses");
-
+            System.out.println("[3] Respond to Helpdesk");
+            System.out.println("[4] View Helpdesk Responses");
+            System.out.println("[5] See History");
+            System.out.println("[6] View Reciepts");
             System.out.println("[7] Logout");
-            int choice = system.validate().menuChoice("Choose: ", 6);
+            int choice = system.validate().menuChoice("Choose: ", 7);
             
             if (choice == 1)
             {
@@ -48,6 +47,16 @@ public class Cashier extends Employee
 
             else if (choice == 3)
             {
+                respondToTicket();
+            }
+            
+            else if (choice == 4)
+            {
+            	viewResponse();
+            }
+
+            else if (choice == 5)
+            {
                 ArrayList<String> historyTag = new ArrayList<>();
                 historyTag.add("CASHIER");
                 historyTag.add("PAUSED");
@@ -55,19 +64,9 @@ public class Cashier extends Employee
                 history(1, historyTag);
             }
             
-            else if (choice == 4)
-            {
-            	Reciept r = new Reciept();
-            }
-
-            else if (choice == 5)
-            {
-            	respondToTicket();
-            }
-            
             else if (choice == 6)
             {
-            	viewResponse();
+                Reciept r = new Reciept();
             }
             
             else if (choice == 7)
@@ -112,6 +111,8 @@ public class Cashier extends Employee
     @Override
     public void requestManager() {
         while (true) {
+            if (qs.emptyDisplay(pauseQ, "No pending requests") && qs.emptyDisplay(cashierQ, "No pending requests")) return;
+
             super.requestManager();
             
             int select = system.validate().minMaxXChoice("X - Go Back, 1 - Select request at top, 2 - Pause request at top, 3 - Unpause request, 4 - Cancel request", 1, 4);
@@ -129,7 +130,7 @@ public class Cashier extends Employee
                 if (qs.emptyDisplay(cashierQ, "No pending request")) break;
                 if (!system.validate().confirm("Are you sure you want to pause Request: " + cashierQ.peek().getId())) break;
                 qm.pause(system.genDate());
-                    System.out.println("Request at head paused");
+                System.out.println("Request at head paused");
                 break;
 
                 // Unpause
@@ -142,7 +143,8 @@ public class Cashier extends Employee
                 if (qs.emptyDisplay(cashierQ, "No pending request")) break;
 
                 if (!system.validate().confirm("Are you sure you want to cancel Request: " + cashierQ.peek().getId())) break;
-                qm.dequeue("Cancelled", "CASHIER", system.genDate(), cashierQ);
+                qm.dequeue("Cancelled", "CASHIER", system.genDate(), cashierQ, 0);
+                System.out.println("Current request cancelled");
                 break;
             }
 
@@ -195,10 +197,7 @@ public class Cashier extends Employee
 
     private void unpause() {
         while (true) {
-            if (pauseQ.isEmpty()) {
-                System.out.println("No paused requests");
-                break;
-            }
+            if (qs.emptyDisplay(pauseQ, "No paused request")) break;
 
             int length = pauseQ.size();
             qm.loadViewQueue(pauseQ);

@@ -6,6 +6,9 @@ public class Admin extends User
 {
 
     private UserManager um;
+    private LinkedList<QueueRequest> accQ;
+    private QueueSystem qs;
+    private QueueSystem.QueueManager qm;
 
     public Admin(MainSystem system, UserRecord record) {
         super(system, record);
@@ -20,6 +23,7 @@ public class Admin extends User
             System.out.println("[2] Add Employee");
             System.out.println("[3] Respond to Concern");
             System.out.println("[4] View All Helpdesk Responses");
+            System.out.println("[5] See Queue History");
             System.out.println("[5] Delete User");
             System.out.println("[6] Logout");
             int choice = system.validate().menuChoice("Choose: ", 6);
@@ -44,7 +48,11 @@ public class Admin extends User
             	viewAllResponses();
             }
             
-            else if (choice == 5)
+            else if (choice == 5) {
+                AdminHistory ah = new AdminHistory();
+            }
+
+            else if (choice == 6)
             {
             	deleteUser();
             }
@@ -241,5 +249,105 @@ public class Admin extends User
         
         System.out.println("Deleted.");
     }
+
+    public class AdminHistory {
+
+        public AdminHistory() {
+            historyMenu();
+        }
+
+        public void historyMenu() {
+
+            while (true) {
+
+                System.out.println("=======View History==========");
+                System.out.println("[1] Cashier");
+                System.out.println("[2] Accounting");
+                System.out.println("[3] Registrar");
+                System.out.println("[4] All");
+                System.out.println("[5] Back");
+
+                switch (system.validate().menuChoice("Choose", 5)) {
+
+                case 1:
+                ArrayList<String> historyTag = new ArrayList<>();
+                historyTag.add("CASHIER");
+                historyTag.add("PAUSED");
+                history(1, historyTag);
+                break;
+
+                case 2:
+                ArrayList<String> historyTag2 = new ArrayList<>();
+                historyTag2.add("ACCOUNTING");
+                history(1, historyTag2);
+                break;
+
+                case 3:
+                ArrayList<String> historyTag3 = new ArrayList<>();
+                historyTag3.add("REGISTRAR");
+                history(1, historyTag3);
+                break;
+
+                case 4:
+                historyDis();
+                break;
+
+                case 5:
+                return;
+
+                }
+
+            }
+
+        }
+
+        public void history(int page, List<String> statements) {
+
+            QueueSystem qs = new QueueSystem(1, statements);
+            int current = 1;
+
+            while (true) {
+                int max = system.queueSystem().getHistoryManager().countEntry(statements);
+                int input = system.validate().minMaxXChoice("Go to page ('x' to go back):", 1, max);
+
+                if (input == current) {
+                    System.out.println("Already on page " + input);
+                    continue;
+                }
+
+                if (input == -1) {
+                    return;
+                }
+
+                qs = new QueueSystem(input, statements);
+                current = input;
+
+            }
+
+        }
+
+        private void historyDis() {
+            QueueSystem qs = new QueueSystem(1);
+            int current = 1;
+
+            while (true) {
+
+                int max = system.queueSystem().getHistoryManager().countEntry();
+                int input = system.validate().minMaxXChoice("Go to page ('x' to go back):", 1, max);
+                if (input == current) {
+                    System.out.println("Already on page " + input);
+                }
+                if (input == -1) {
+                    return;
+                }
+
+                qs = new QueueSystem(input);
+                current = input;
+
+            }
+        }
+
+    }
+
 }
 
