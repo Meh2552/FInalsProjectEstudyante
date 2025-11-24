@@ -75,84 +75,10 @@ public abstract class Employee extends User
 
     public abstract void displayRequest();
 
-    public void requestManager(String prompt) {
+    public void requestManager() {
 
         displayRequest();
 
-        System.out.println(prompt);
     }
 
-    public void historyMenu() {
-
-        while (true) {
-
-        System.out.println("=======View History==========");
-        System.out.println("[1] Cashier");
-        System.out.println("[2] Accounting");
-        System.out.println("[3] Registrar");
-        System.out.println("[4] All");
-        System.out.println("[5] Back");
-
-        switch (system.validate().menuChoice("Choose", 5)) {
-
-            case 1:
-            historyDis("CASHIER");
-            break;
-
-            case 2:
-            historyDis("ACCOUNTING");
-            break;
-
-            case 3:
-            historyDis("REGISTRAR");
-            break;
-
-            case 4:
-            historyDis();
-            break;
-
-            case 5:
-            return;
-
-        }
-
-        }
-
-    }
-
-    private void historyDis(String window) {
-        QueueSystem qs = new QueueSystem(1,window);
-        int current = 1;
-
-        while (true) {
-            int max = system.queueSystem().getHistoryManager().countEntry(window);
-            int input = system.validate().minMaxXChoice("Go to page ('x' to go back):", 1, max);
-            if (input == current) System.out.println("Already on page " + input);
-            if (input == -1) return;
-
-            qs = new QueueSystem(input, window);
-            current = input;
-
-        }
-    }
-
-    private void historyDis() {
-        QueueSystem qs = new QueueSystem(1);
-        int current = 1;
-
-        while (true) {
-            int max = system.queueSystem().getHistoryManager().countEntry();
-            int input = system.validate().minMaxXChoice("Go to page ('x' to go back):", 1, max);
-            if (input == current) {
-                System.out.println("Already on page " + input);
-            }
-            if (input == -1) {
-                return;
-            }
-
-            qs = new QueueSystem(input);
-            current = input;
-
-        }
-    }
 }
