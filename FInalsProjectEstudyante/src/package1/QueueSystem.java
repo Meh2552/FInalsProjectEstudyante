@@ -133,9 +133,13 @@ public class QueueSystem {
             writeQ();
             getHistoryManager().appendHist(request);
             getDocumentManager().changeState(request.getId(), request.getState());
+            loadQ();
         }
 
         private void loadQ() {
+            getCashierQ().clear();
+            getAccountQ().clear();
+            getRegistarQ().clear();
 
             List<String> lines = read();
 

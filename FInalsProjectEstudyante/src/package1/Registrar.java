@@ -112,7 +112,7 @@ public class Registrar extends Employee
 
                 // Complete
                 case 4:
-                index = selectRequest("Pick-Up");
+                index = selectRequest("Ready for Pick-Up");
                 if (index == -1) break;
                 qm.dequeue("Completed", "REGISTRAR", system.genDate(), regQ, index);
                 System.out.println("Request resolved");
