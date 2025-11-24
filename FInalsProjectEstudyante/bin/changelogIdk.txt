@@ -11,6 +11,7 @@
 
 - Files para sa queue, receipt, at history (hindi na change, nilagay ko lang na meron)
 - Manage acc para sa student (not sure if nagawa ko na as of writing)
+- Moved history to user
 
 > helpdesk system (idk specifics kya eto nalang)
 

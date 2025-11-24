@@ -27,21 +27,44 @@ public class Accounting extends Employee
             System.out.println("\n=== ACCOUNTING MENU ===");
             System.out.println("[1] View Paid Requests");
             System.out.println("[2] Approve/Reject Payment");
-            System.out.println("[3] View History");
-            System.out.println("[4] Logout");
-            int c = system.validate().menuChoice("Choose: ", 3);
+            System.out.println("[3] Respond to Helpdesk");
+            System.out.println("[4] View Helpdesk Responses");
             
-            if (c == 1)
+            System.out.println("[5] Logout");
+            
+            int choice = system.validate().menuChoice("Choose: ", 4);
+            
+            if (choice == 1)
             {
             	displayRequest();
             }
             
-            else if (c == 2)
+            else if (choice == 2)
             {
             	requestManager();
             }
             
-            else if (c == 3)	
+            else if (choice == 3)
+            {
+            	respondToTicket();
+            }
+            
+            else if (choice == 4)
+            {
+            	viewResponse();
+            }
+            
+            else if (choice == 3)
+            {
+            	respondToTicket();
+            }
+            
+            else if (choice == 4)
+            {
+            	viewResponse();
+            }
+            
+            else if (choice == 5)	
             {
                 ArrayList<String> historyTag = new ArrayList<>();
                 historyTag.add("ACCOUNTING");
@@ -49,7 +72,7 @@ public class Accounting extends Employee
                 history(1, historyTag);
             	return;
             }
-            else if (c == 4) {
+            else if (choice == 4) {
                 return;
             }
         }

@@ -21,8 +21,12 @@ public class Registrar extends Employee
             System.out.println("=== REGISTRAR MENU ===");
             System.out.println("[1] View Approved Requests");
             System.out.println("[2] Release Document");
-            System.out.println("[3] Logout");
-            int choice = system.validate().menuChoice("Choose: ", 3);
+            System.out.println("[3] Respond to Helpdesk");
+            System.out.println("[4] View Helpdesk Responses");
+            
+            System.out.println("[5] Logout");
+            
+            int choice = system.validate().menuChoice("Choose: ", 5);
             
             if (choice == 1)
             {
@@ -33,7 +37,23 @@ public class Registrar extends Employee
             {
             	releaseDocument();
             }
+            
             else if (choice == 3)
+            {
+            	respondToTicket();
+            }
+            
+            else if (choice == 4)
+            {
+            	viewResponse();
+            }
+            
+            else if (choice == 5)
+            {
+            	respondToTicket();
+            }
+            
+            else if (choice == 6)
             {
                 //TODO : EDTO
                 ArrayList<String> historyTag = new ArrayList<>();
@@ -41,7 +61,7 @@ public class Registrar extends Employee
                 historyTag.add("Approved");
                 history(1, historyTag);
             }
-            else if (choice == 4) {
+            else if (choice == 7) {
                 return;
             }
         }

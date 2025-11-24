@@ -73,6 +73,26 @@ public abstract class Employee extends User
         }
     }
 
+    public void viewResponse() {
+        String name = record.getFullName();
+        List<HelpdeskResponse> list = system.helpdeskResponseManager().loadByResponder(name);
+
+        if (list.size() == 0) {
+            System.out.println("You have not responded to any tickets yet.");
+            return;
+        }
+
+        System.out.println("=== YOUR HELP DESK RESPONSE HISTORY ===");
+
+        for (HelpdeskResponse r : list) {
+            System.out.println("-".repeat(50));
+            System.out.println("Ticket ID: " + r.getTicketId());
+            System.out.println("Date: " + r.getTime());
+            System.out.println("Message:");
+            System.out.println("  " + r.getMessage());
+        }
+    }
+
     public abstract void displayRequest();
 
     public void requestManager() {
@@ -81,4 +101,88 @@ public abstract class Employee extends User
 
     }
 
+    public void history(int page, List<String> statements) {
+
+        QueueSystem qs = new QueueSystem(1, statements);
+        int current = 1;
+
+        while (true) {
+            int max = system.queueSystem().getHistoryManager().countEntry(statements);
+            int input = system.validate().minMaxXChoice("Go to page ('x' to go back):", 1, max);
+            if (input == current) {
+                System.out.println("Already on page " + input);
+                continue;
+            }
+            if (input == -1) {
+                return;
+            }
+
+            qs = new QueueSystem(input, statements);
+            current = input;
+
+        }
+
+    }
+
+    public void historyWAGTOWEOJFJOFENFOE() {
+
+        while (true) {
+
+        System.out.println("=======View History==========");
+        System.out.println("[1] Cashier");
+        System.out.println("[2] Accounting");
+        System.out.println("[3] Registrar");
+        System.out.println("[4] All");
+        System.out.println("[5] Back");
+
+        switch (system.validate().menuChoice("Choose", 5)) {
+
+            case 1:
+            historyDis("CASHIER");
+            break;
+
+            case 2:
+            historyDis("ACCOUNTING");
+            break;
+
+            case 3:
+            historyDis("REGISTRAR");
+            break;
+
+            case 4:
+            historyDis();
+            break;
+
+            case 5:
+            return;
+
+        }
+
+        }
+
+    }
+
+    private void historyDis(String window) {
+
+    }
+
+    private void historyDis() {
+        QueueSystem qs = new QueueSystem(1);
+        int current = 1;
+
+        while (true) {
+            int max = system.queueSystem().getHistoryManager().countEntry();
+            int input = system.validate().minMaxXChoice("Go to page ('x' to go back):", 1, max);
+            if (input == current) {
+                System.out.println("Already on page " + input);
+            }
+            if (input == -1) {
+                return;
+            }
+
+            qs = new QueueSystem(input);
+            current = input;
+
+        }
+    }
 }
