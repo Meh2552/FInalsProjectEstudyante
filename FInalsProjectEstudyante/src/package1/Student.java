@@ -66,6 +66,7 @@ public class Student extends User
 
         // TODO: change the price
         String doc, price = "0";
+        
         while (true) {
 
             System.out.println("[1] SF10");

@@ -2,7 +2,7 @@ package package1;
 
 import java.util.*;
 
-public abstract class Employee extends User
+public abstract class Employee extends User implements HelpdeskResponder
 {
 
     public Employee(MainSystem system, UserRecord record) 
@@ -18,6 +18,7 @@ public abstract class Employee extends User
         employeeMenu();
     }
     
+    @Override
     public void respondToTicket() 
     {
 
@@ -32,13 +33,13 @@ public abstract class Employee extends User
 
         while (true) 
         {
-            System.out.println("=== SELECT TICKET TO RESPOND ===");
+            System.out.println("=== HELPDESK QUEUE (OLD -> NEW) ===");
             
             for (int i = 0; i < tickets.size(); i++) 
             {
                 HelpdeskTicket t = tickets.get(i);
                 
-                System.out.println("[" + (i+1) + "] ID:" + t.getId() + " (" + t.getStudentNum() + ") " + t.getIssue() + " | Status: " + t.getStatus() + " | " + t.getDate());
+                System.out.println("[" + (i+1) + "] ID:" + t.getId() + " (" + t.getStudentNum() + ") " + t.getIssue() + " | " + t.getDate() + " | Status: " + t.getStatus());
             }
 
             int sel = system.validate().menuChoice("Select ticket: ", tickets.size());            
@@ -67,11 +68,41 @@ public abstract class Employee extends User
 
             chosen.setStatus("Answered");
             system.helpdeskManager().saveTickets(tickets);
+            
+            System.out.println("=== RESPONSE CONFIRMED ===");
+            System.out.println("You replied at: " + ts);
+            System.out.println("Message: " + respMsg);
+            System.out.println("-".repeat(50));
+
 
             System.out.println("Response saved and ticket marked Answered.");
             return;
         }
     }
+    
+    public void viewResponse() 
+    {
+        String name = record.getFullName();
+        List<HelpdeskResponse> list = system.helpdeskResponseManager().loadByResponder(name);
+
+        if (list.size() == 0) 
+        {
+            System.out.println("You have not responded to any tickets yet.");
+            return;
+        }
+
+        System.out.println("=== YOUR HELP DESK RESPONSE HISTORY ===");
+
+        for (HelpdeskResponse r : list) 
+        {
+            System.out.println("-".repeat(50));
+            System.out.println("Ticket ID: " + r.getTicketId());
+            System.out.println("Date: " + r.getTime());
+            System.out.println("Message:");
+            System.out.println("  " + r.getMessage());
+        }
+    }
+
 
     public abstract void displayRequest();
 

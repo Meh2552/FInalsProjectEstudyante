@@ -36,4 +36,24 @@ public class HelpdeskResponseManager extends DocuHandler
         
         return out;
     }
+    
+    public List<HelpdeskResponse> loadByResponder(String responderName) 
+    {
+        List<HelpdeskResponse> all = loadAll();
+        
+        ArrayList<HelpdeskResponse> result = new ArrayList<>();
+
+        for (HelpdeskResponse r : all) 
+        {
+            if (r.getRespond().equalsIgnoreCase(responderName)) 
+            {
+                result.add(r);
+            }
+        }
+
+        // sort by arrival time
+        Collections.sort(result, (a, b) -> a.getTime().compareTo(b.getTime()));
+
+        return result;
+    }
 }

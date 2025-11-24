@@ -23,9 +23,11 @@ public class Cashier extends Employee
             System.out.println("[1] View Request Status");
             System.out.println("[2] Manage Requests");
             System.out.println("[3] Manage History");
+            System.out.println("[4] Respond to Helpdesk");
+            System.out.println("[5] View Helpdesk Responses");
             // TODO: reciepts
-            System.out.println("[4] Logout");
-            int choice = system.validate().menuChoice("Choose: ", 4);
+            System.out.println("[6] Logout");
+            int choice = system.validate().menuChoice("Choose: ", 6);
             
             if (choice == 1)
             {
@@ -43,6 +45,16 @@ public class Cashier extends Employee
             }
             
             else if (choice == 4)
+            {
+            	respondToTicket();
+            }
+            
+            else if (choice == 5)
+            {
+            	viewResponse();
+            }
+            
+            else if (choice == 6)
             {
             	return;
             }
