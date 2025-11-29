@@ -133,7 +133,6 @@ public class QueueSystem {
             writeQ();
             getHistoryManager().appendHist(request);
             getDocumentManager().changeState(request.getId(), request.getState());
-            loadQ();
         }
 
         private void loadQ() {

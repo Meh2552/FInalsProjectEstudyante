@@ -167,14 +167,15 @@ public class Student extends User
         while (true) 
         {
 
-            System.out.println("\n=== CREATE HELP DESK TICKET ===");
+            System.out.println("=== CREATE HELP DESK TICKET ===");
             System.out.println("[1] Wrong student information");
             System.out.println("[2] Grade correction");
             System.out.println("[3] Payment concern");
             System.out.println("[4] Document follow-up");
             System.out.println("[5] Others (type your own issue)");
+            System.out.println("[6] Go Back");
 
-            int choice = system.validate().menuChoice("Select issue type: ", 6);
+            int choice = system.validate().menuChoice("Select: ", 6);
 
             if (choice == 1) 
             {
@@ -195,12 +196,18 @@ public class Student extends User
             {
             	issue = "Document follow-up";
             }
+    
             
-            else 
+            else if (choice == 5)
             {
                 issue = system.validate().requireText("Describe your issue: ");
             }
 
+            else if (choice == 6)
+            {
+                return;
+            }
+            
             String step = system.validate().editCancelContinue();
             if (step.equals("EDIT")) 
             {
