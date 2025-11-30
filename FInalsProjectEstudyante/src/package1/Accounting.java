@@ -2,6 +2,8 @@ package package1;
 
 import java.util.*;
 
+import src.package1.Cashier.Reciept;
+
 public class Accounting extends Employee 
 {
 
@@ -28,6 +30,7 @@ public class Accounting extends Employee
             System.out.println("[3] Respond to Helpdesk");
             System.out.println("[4] View Helpdesk Responses");
             System.out.println("[5] See History");
+            System.out.println("[5] View Reciepts");
             System.out.println("[6] Logout");
             
             int choice = system.validate().menuChoice("Choose: ", 6);
@@ -60,6 +63,10 @@ public class Accounting extends Employee
             }
             else if (choice == 6) {
                 return;
+            }
+            else if (choice == 6)
+            {
+                Cashier.Reciept r = new Cashier.Reciept();
             }
         }
     }

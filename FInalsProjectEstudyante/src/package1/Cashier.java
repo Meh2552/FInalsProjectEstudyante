@@ -5,7 +5,7 @@ import java.util.*;
 public class Cashier extends Employee 
 {
 
-    private LinkedList<QueueRequest> cashierQ;
+    private PriorityQueue<QueueRequest> cashierQ;
     private LinkedList<QueueRequest> pauseQ;
     private QueueSystem qs;
     private QueueSystem.QueueManager qm;
@@ -81,7 +81,10 @@ public class Cashier extends Employee
     @Override
     public void displayRequest() {
         System.out.println("----  Current  ----");
-        if (qs.emptyDisplay(cashierQ, "No requests in queue")) return;
+        if (cashierQ.isEmpty()){
+            System.out.println("No items in queue");
+            return;
+        } 
 
         LinkedList<QueueRequest> temp = new LinkedList<>();
         temp.add(cashierQ.peek());
@@ -195,6 +198,7 @@ public class Cashier extends Employee
         }
     }
 
+    // TODO: alter changes
     private void unpause() {
         while (true) {
             if (qs.emptyDisplay(pauseQ, "No paused request")) break;

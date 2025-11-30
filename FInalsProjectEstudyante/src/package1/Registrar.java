@@ -32,7 +32,7 @@ public class Registrar extends Employee
             System.out.println("[5] See History");
             System.out.println("[6] Logout");
             
-            int choice = system.validate().menuChoice("Choose: ", 5);
+            int choice = system.validate().menuChoice("Choose: ", 6);
             
             if (choice == 1)
             {

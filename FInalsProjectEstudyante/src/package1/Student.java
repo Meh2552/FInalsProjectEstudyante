@@ -26,8 +26,8 @@ public class Student extends User
             System.out.println("[2] View My Requests");
             System.out.println("[3] Ask Concern (Helpdesk)");
             System.out.println("[4] View Helpdesk Replies");
-            System.out.println("[5] Logout");
-            System.out.println("[6] Delete Account");
+            System.out.println("[5] Manage Account");
+            System.out.println("[6] Logout");
             int choice = system.validate().menuChoice("Choose: ", 6);
             
             if (choice == 1) 
@@ -52,11 +52,11 @@ public class Student extends User
             
             else if (choice == 5) 
             {
-            	return;
+            	accountMan();
             }
 
             else if (choice == 6) {
-                deleteAccount();
+                return;
             }
         }
     }
@@ -281,7 +281,104 @@ public class Student extends User
         }
     }
 
-    private void deleteAccount() // TODO: possibly gawin to manage acc not sure
+   private void accountMan() {
+        
+        while (true) 
+        {
+
+            System.out.println("=== Manage Account ===");
+            System.out.println("[1] Change Username");
+            System.out.println("[2] Change Password");
+            System.out.println("[3] Delete Account");
+            System.out.println("[4] Go Back");
+
+            int choice = system.validate().menuChoice("Select: ", 4);
+
+            if (choice == 1) 
+            {
+            	changeUser();
+            }
+            
+            else if (choice == 2)
+            {
+            	changePassword();
+            }
+            
+            else if (choice == 3)
+            {
+            	deleteAccount();
+            }
+            
+            else if (choice == 4) 
+            {
+            	return;
+            }
+
+        }
+
+    }
+
+    private void changeUser() {
+        while (true) {
+
+        String user = system.validate().requireText("New Username or X to go back: ");
+
+        if (user.matches("[xX]")) {
+            break;
+        }
+
+        if (system.userManager().usernameExists(user)) {
+            System.out.println("Username already exists.");
+            continue;
+        }
+
+        System.out.println("= Confirm =");
+        System.out.println("Former Username: " + record.getUsername());
+        System.out.println("New Username: " + user);
+
+        String confirm = system.validate().editCancelContinue();
+
+        if (confirm.equals("EDIT")) {
+            continue;
+        } 
+
+        else if (confirm.equals("CANCEL")) {
+            return;
+        }
+
+        system.userManager().changeUser(record.getUsername(), user);
+
+        }
+    }
+
+    private void changePassword() {
+        while (true) {
+
+            String pass = system.validate().requireText("New Password or X to go back: ");
+            if (pass.matches("[xX]")) {
+                break;
+            }
+
+            String conPass = system.validate().requireText("Confirm Password (Type 'x' to go back) : "); // Confirm password
+            if (conPass.matches("[xX]")) {
+                continue;
+            }
+
+            // Confirms if password and confirmed password is the same
+            if (pass.equals(conPass)) {
+                System.out.println("Incorrect password, type your password again to confirm");
+                continue;
+            }
+
+            boolean confirm = system.validate().confirm("Confirm change password? ");
+
+            if (confirm) system.userManager().changePass(record.getUsername(), pass);
+            else continue;
+            break;
+        }
+    }
+
+    private void deleteAccount() 
     {
         String user = record.getUsername();
         System.out.println("= CONFIRM DELETE ACCOUNT =");
@@ -299,9 +396,7 @@ public class Student extends User
                 System.out.println(user + " was deleted");
                 new UserAuth(system).start();
             }
-            else return;
 
         } 
-        else return;
     }
 }

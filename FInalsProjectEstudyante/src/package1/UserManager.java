@@ -113,6 +113,68 @@ public class UserManager extends DocuHandler
         write(out);
     }
 
+    public void changeUser(String username, String newUsername) {
+        List<String> lines = read();
+
+        ArrayList<String> out = new ArrayList<String>();
+
+        for (String line : lines) {
+            String[] part = line.split(",");
+
+            if (part.length > 0 && part[0].equals(username)) {
+                String output = "";
+                boolean first = true;
+
+                // Rewrites line
+                for (String text : part) {
+                    if (first) {
+                        first = false;
+                        text = newUsername;
+                    }
+
+                    output = output.concat(text);
+                }
+
+                out.add(output);
+                continue;
+            }
+
+            out.add(line);
+        }
+        write(out);
+    }
+
+    public void changePass(String username, String newPassword) {
+        List<String> lines = read();
+
+        ArrayList<String> out = new ArrayList<String>();
+
+        for (String line : lines) {
+            String[] part = line.split(",");
+
+            if (part.length > 0 && part[0].equals(username)) {
+                String output = "";
+                int count = 0;
+
+                // Rewrites line
+                for (String text : part) {
+                    count++;
+                    if (count == 2) {
+                        text = newPassword;
+                    }
+
+                    output = output.concat(text);
+                }
+
+                out.add(output);
+                continue;
+            }
+
+            out.add(line);
+        }
+        write(out);
+    }
+
     public List<UserRecord> loadAll() 
     {
         List<String> lines = read();

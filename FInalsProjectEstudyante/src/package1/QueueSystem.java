@@ -55,12 +55,12 @@ public class QueueSystem {
     }
 
 
-    private static LinkedList<QueueRequest> casQ = new LinkedList<>();
+    private static PriorityQueue<QueueRequest> casQ = new PriorityQueue<>();
     private static LinkedList<QueueRequest> pauseQ = new LinkedList<>();
-    private static LinkedList<QueueRequest> regQ = new LinkedList<>();
+    private static PriorityQueue<QueueRequest> regQ = new PriorityQueue<>();
     private static LinkedList<QueueRequest> accQ = new LinkedList<>();
 
-    public static LinkedList<QueueRequest> getCashierQ() {
+    public static PriorityQueue<QueueRequest> getCashierQ() {
         return casQ;
     }
 
@@ -68,7 +68,7 @@ public class QueueSystem {
         return pauseQ;
     }
 
-    public static LinkedList<QueueRequest> getRegistarQ() {
+    public static PriorityQueue<QueueRequest> getRegistarQ() {
         return regQ;
     }
 
@@ -76,13 +76,9 @@ public class QueueSystem {
         return accQ;
     }
 
-    // Used for display when queue is empty
-    protected boolean emptyDisplay(LinkedList<QueueRequest> queue, String message) {
-        if (queue.isEmpty()) {
-            System.out.println(message);
-            return true;
-        }
-        return false;
+    protected List<QueueRequest> PQtoList(PriorityQueue queue) {
+        ArrayList list = new ArrayList<>(queue);
+        return list;
     }
 
     // ~~~~~~~~~~~~~~~~~~~~
@@ -171,7 +167,7 @@ public class QueueSystem {
         // Pauses a request
         public void pause(String date) {
 
-            if (emptyDisplay(getCashierQ(), "No such requests found")) return;
+            if (getCashierQ().isEmpty()) return;
 
             QueueRequest pos = getCashierQ().poll();
             updateInfo(pos, "Paused", "PAUSED", date);
@@ -183,8 +179,6 @@ public class QueueSystem {
         // Unpauses the 'n'th request that is in pause queue, use menuChoice for index
         // example index is 3, it removes the 'n'th (3rd) request in the pause queue
         public QueueRequest unpause(String state, String date, boolean wasPaid, int index) {
-
-            if (emptyDisplay(getPauseQ(), "No such requests found")) return null;
 
             QueueRequest pos = getPauseQ().get(index);
             
@@ -199,10 +193,9 @@ public class QueueSystem {
             return null;
         }
 
-        // Move request to next window/request state 
-        public void moveToWindow(String state, String window, String date, LinkedList<QueueRequest> from, LinkedList<QueueRequest> to) {
 
-            if (emptyDisplay(from, "No such requests found")) return;
+        // Move request to next window/request state 
+        public void moveToWindow(String state, String window, String date, LinkedList<QueueRequest> from, PriorityQueue<QueueRequest> to) {
 
             QueueRequest pos = from.poll();
             to.add(pos);
@@ -211,26 +204,12 @@ public class QueueSystem {
             
         }
 
-        // Move request in cashier or paused queue, 0 for cashier, other means pause
-        public void moveToWindow(String date, int index) {
+        public void moveToWindow(String state, String window, String date, LinkedList<QueueRequest> from, PriorityQueue<QueueRequest> to, int index) {
 
-            QueueRequest pos;
-            if (index == -1) pos = getCashierQ().poll();
-            else pos = getPauseQ().remove(index);
+            QueueRequest pos = from.remove(index);
             
-            getAccountQ().add(pos);
-            updateInfo(pos, "Paid", "ACCOUNTING", date);
-            writeChange(pos);
-
-        }
-
-        // Pwede ata merge eto sa taas pero may maiiba lang, for registrar
-        public void moveToWindow(String state, String date, int index) {
-
-            QueueRequest pos = getRegistarQ().remove(index);
-            
-            getAccountQ().add(pos);
-            updateInfo(pos, state, "REGISTRAR", date);
+            to.add(pos);
+            updateInfo(pos, state, window, date);
             writeChange(pos);
 
         }
@@ -239,7 +218,6 @@ public class QueueSystem {
         // Dequeues request at head
         public void dequeue(String state, String window, String date, LinkedList<QueueRequest> queue, int index) {
 
-            if (emptyDisplay(queue, "No such requests found")) return;
 
             QueueRequest pos = queue.remove(index);
             updateInfo(pos, state, window, date);
@@ -267,11 +245,11 @@ public class QueueSystem {
         }
 
 
-        public List<QueueRequest> lookForState(String state, LinkedList<QueueRequest> queue) {
+        public List<QueueRequest> lookForState(String state, List<QueueRequest> queue) {
             ArrayList<QueueRequest> qr = new ArrayList<>();
 
             for (QueueRequest request : queue) {
-                if (emptyDisplay(queue, "No such requests found")) return null;
+                if (queue.isEmpty()) return null;
                 else if (request.getState().equals(state)) {
                     qr.add(request);
                 }
@@ -314,7 +292,7 @@ public class QueueSystem {
         }
 
         // Load certain states of request in queue, returns true if queue isn't empty
-        public boolean loadViewQueue(LinkedList<QueueRequest> queue, boolean willDisplayHeader, String state) {
+        public boolean loadViewQueue(List<QueueRequest> queue, boolean willDisplayHeader, String state) {
             if (queue == null || queue.isEmpty()) return false;
             List<QueueRequest> filtered = lookForState(state, queue);
             if (filtered == null || filtered.isEmpty()) return false;
@@ -353,6 +331,17 @@ public class QueueSystem {
                         requestFormat(request);
                     }
                 }
+            }
+
+            // Used to display current request in a queue
+            public ViewQueue(QueueRequest request, boolean showPrice) {
+
+                System.out.println("====Current Request====");
+                System.out.printf("   REQUEST: %-10s            %s%n", request.getId(), request.getDate()); 
+                System.out.printf("%n   REQUESTED DOCUMENT: %-15s  %s%n", request.getDocument(), request.getState());
+
+                if (showPrice) 
+                System.out.printf("   Price: %-15s  ", request.getPrice());
             }
 
             // UI

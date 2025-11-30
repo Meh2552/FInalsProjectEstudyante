@@ -115,7 +115,7 @@ public class Admin extends User
                     break; 
                 }
 
-                System.out.println("[1] Cashier [2] Registrar [3] Accounting [4] Admin, [5] to go back)"); //TODO: change the promgt
+                System.out.println("[1] Cashier [2] Registrar [3] Accounting [4] Admin, [5] to go back)"); 
                 int r = system.validate().menuChoice("Choose role: ", 5);
 
                 if (r == 1) {
