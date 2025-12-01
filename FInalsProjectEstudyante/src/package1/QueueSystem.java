@@ -59,8 +59,8 @@ public class QueueSystem {
 
     private static PriorityQueue<QueueRequest> casQ = new PriorityQueue<>(( a, b ) -> Integer.parseInt(a.getPriority()) - Integer.parseInt(b.getPriority()));
     private static LinkedList<QueueRequest> pauseQ = new LinkedList<>();
-    private static PriorityQueue<QueueRequest> regQ = new PriorityQueue<>(( a, b ) -> Integer.parseInt(a.getPriority()) - Integer.parseInt(b.getPriority()));
-    private static LinkedList<QueueRequest> accQ = new LinkedList<>();
+    private static LinkedList<QueueRequest> regQ = new LinkedList<>();
+    private static PriorityQueue<QueueRequest> accQ = new PriorityQueue<>((a, b) -> Integer.parseInt(a.getPriority()) - Integer.parseInt(b.getPriority()));
 
     public static PriorityQueue<QueueRequest> getCashierQ() {
         return casQ;
@@ -70,16 +70,16 @@ public class QueueSystem {
         return pauseQ;
     }
 
-    public static PriorityQueue<QueueRequest> getRegistarQ() {
+    public static LinkedList<QueueRequest> getRegistarQ() {
         return regQ;
     }
 
-    public static LinkedList<QueueRequest> getAccountQ() {
+    public static PriorityQueue<QueueRequest> getAccountQ() {
         return accQ;
     }
 
-    protected List<QueueRequest> PQtoList(PriorityQueue queue) {
-        ArrayList list = new ArrayList<>(queue);
+    protected List<QueueRequest> PQtoList(PriorityQueue<QueueRequest> queue) {
+        ArrayList<QueueRequest> list = new ArrayList<>(queue);
         return list;
     }
 
@@ -195,23 +195,6 @@ public class QueueSystem {
 
         }
 
-        // Unpauses the 'n'th request that is in pause queue, use menuChoice for index
-        // example index is 3, it removes the 'n'th (3rd) request in the pause queue
-        public QueueRequest unpause(String state, String date, boolean wasPaid, int index) {
-
-            QueueRequest pos = getPauseQ().get(index);
-            
-            if (wasPaid) {
-                return pos;
-            }
-
-            else updateInfo(pos, state, "CASHIER", date);
-            
-            getPauseQ().remove(index);
-            writeChange(pos);
-            return null;
-        }
-
 
         // Move request to next window/request state 
         public void moveToWindow(String state, String window, String date, PriorityQueue<QueueRequest> from, PriorityQueue<QueueRequest> to) {
@@ -221,6 +204,15 @@ public class QueueSystem {
             updateInfo(pos, state, window, date);
             writeChange(pos);
             
+        }
+
+        public void moveToWindow(String state, String window, String date, PriorityQueue<QueueRequest> from, LinkedList<QueueRequest> to) {
+
+            QueueRequest pos = from.poll();
+            to.add(pos);
+            updateInfo(pos, state, window, date);
+            writeChange(pos);
+
         }
 
         public void moveToWindow(String state, String window, String date, LinkedList<QueueRequest> from, PriorityQueue<QueueRequest> to, int index) {
@@ -284,80 +276,58 @@ public class QueueSystem {
             return qr;
         }
 
-        public List<List<QueueRequest>> queueStates(List<QueueRequest> queue) {
-            ArrayList<String> states = new ArrayList<>();
-            ArrayList<QueueRequest> qr;
-            ArrayList<List<QueueRequest>> stateList = new ArrayList<>();
-
-            if (queue == null || queue.isEmpty()) {
-                return null;
-            }
-
-            for (QueueRequest request : queue) {
-
-                if (!states.contains(request.getState())) {
-
-                    String current = request.getState();
-                    states.add(current);
-                    qr = new ArrayList<>();
-
-                    for(QueueRequest state : queue) {
-                        if (state.getState().equals(current)) qr.add(state);
-                    }
-
-                    stateList.add(qr);
-
-                }
-            }                    
-
-            Collections.sort(stateList, (a, b) ->
-                a.get(0).getState().compareToIgnoreCase(b.get(0).getState())
-            );
-
-            return stateList;
-        }
-
 
         // Load certain states of request in queue, returns true if queue isn't empty
-        public boolean loadViewQueue(List<QueueRequest> queue, boolean willDisplayHeader, String state) {
+        public boolean loadViewQueue(List<QueueRequest> queue, boolean willDisplayHeader, String state, boolean skipFirst, boolean showPrice, boolean reverse, int limit) {
             if (queue == null || queue.isEmpty()) return false;
             List<QueueRequest> filtered = lookForState(state, queue);
             if (filtered == null || filtered.isEmpty()) return false;
-            ViewQueue vq = new ViewQueue(filtered, willDisplayHeader);
+
+            if (reverse) Collections.reverse(filtered);
+            ViewQueue vq = new ViewQueue(filtered, willDisplayHeader, skipFirst, showPrice, limit);
             return true;
         }
 
 
         // Load all states of a queue, returns true if queue isn't empty
-        public boolean loadViewQueue(List<QueueRequest> queue) {
+        public boolean loadViewQueue(List<QueueRequest> queue, boolean skipFirst, boolean showPrice, boolean reverse, int limit) {
             if (queue == null || queue.isEmpty()) return false;
-            ViewQueue vq = new ViewQueue(queueStates(queue));
+            if (reverse) Collections.reverse(queue);
+            ViewQueue vq = new ViewQueue(queue, true, skipFirst, showPrice, limit);
             return true;
+        }
+
+        // Load all states of a queue, returns true if queue isn't empty
+        public void loadViewQueue(QueueRequest request, boolean showPrice) {
+            
+            ViewQueue vq = new ViewQueue(request, showPrice);
+            
         }
 
 
         public static class ViewQueue {
 
-            public ViewQueue(List<QueueRequest> queue, boolean willDisplayHeader) {
+            public ViewQueue(List<QueueRequest> queue, boolean willDisplayHeader, boolean skipFirst, boolean showPrice, int limit) {
 
                 if (willDisplayHeader) viewDisplay();
+                int count = 0;
+                int index = 1;
 
                 for (QueueRequest request : queue) {
-                    requestFormat(request);
-                }
+                    count++;
 
-            }
-
-            public ViewQueue(List<List<QueueRequest>> queue) {
-
-                viewDisplay();
-
-                for (List<QueueRequest> stateList : queue) {
-
-                    for (QueueRequest request : stateList) {
-                        requestFormat(request);
+                    if (skipFirst) {
+                        skipFirst = false;
+                        continue;
                     }
+
+                    if (showPrice) requestFormat(request, index, showPrice);
+                    else requestFormat(request, index);
+                    
+                    index++;
+                    if (limit != 0 && count >= limit) break;
                 }
+
             }
 
             // Used to display current request in a queue
@@ -368,18 +338,24 @@ public class QueueSystem {
                 System.out.printf("%n   REQUESTED DOCUMENT: %-15s  %s%n", request.getDocument(), request.getState());
 
                 if (showPrice) 
-                System.out.printf("   Price: %-15s  ", request.getPrice());
+                System.out.printf("   Price: %-15s  %n", request.getPrice());
             }
 
             // UI
             public void viewDisplay() {
-                System.out.printf("  %-7s  |  %-12s  |  %-25s  |   %-20s  |  %-7s  |  %s%n", "Request", "Student","Document", "Date & Time", "Price", " Status");
+                System.out.printf("      %-7s  |  %-12s  |  %-25s  |   %-20s  |  %-7s  |  %s%n", "Request", "Student","Document", "Date & Time", "Price", " Status");
             }
 
 
-            public void requestFormat(QueueRequest request) {
+            public void requestFormat(QueueRequest request, int index) {
 
-                System.out.printf("  %-7s  |  %-12s  |  %-25s  |   %-20s  |  %-7s  |  %s%n", request.getId(), request.getStNum(), request.getDocument(), request.getDate(), "", request.getState());
+                System.out.printf("%4d. %-7s  |  %-12s  |  %-25s  |   %-20s  |  %-7s  |  %s%n",index , request.getId(), request.getStNum(), request.getDocument(), request.getDate(), "", request.getState());
+
+            }
+
+            public void requestFormat(QueueRequest request, int index, boolean showPrice) {
+
+                System.out.printf("%4d. %-7s  |  %-12s  |  %-25s  |   %-20s  |  %-7s  |  %s%n", index, request.getId(), request.getStNum(), request.getDocument(), request.getDate(), request.getPrice(), request.getState());
 
             }
 

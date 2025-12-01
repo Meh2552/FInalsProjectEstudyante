@@ -27,12 +27,13 @@ public class Cashier extends Employee
         {
             System.out.println("\n=== CASHIER MENU ===");
             System.out.println("[1] View Request Status");
-            System.out.println("[2] Manage Requests");
-            System.out.println("[3] Respond to Helpdesk");
-            System.out.println("[4] View Helpdesk Responses");
-            System.out.println("[5] See History");
-            System.out.println("[6] View Reciepts");
-            System.out.println("[7] Logout");
+            System.out.println("[2] Create Request"); //TODO: eto
+            System.out.println("[3] Manage Requests");
+            System.out.println("[4] Respond to Helpdesk");
+            System.out.println("[5] View Helpdesk Responses");
+            System.out.println("[6] See History");
+            System.out.println("[7] View Reciepts");
+            System.out.println("[8] Logout");
             int choice = system.validate().menuChoice("Choose: ", 7);
             
             if (choice == 1)
@@ -42,20 +43,25 @@ public class Cashier extends Employee
             
             else if (choice == 2)
             {
-                requestManager();
+                reciDisplay();
             }
 
             else if (choice == 3)
             {
-                respondToTicket();
+                requestManager();
             }
             
             else if (choice == 4)
             {
-            	viewResponse();
-            }
+            	respondToTicket();
+            }   
 
             else if (choice == 5)
+            {
+                viewResponse();
+            }
+            
+            else if (choice == 6)
             {
                 ArrayList<String> historyTag = new ArrayList<>();
                 historyTag.add("CASHIER");
@@ -64,12 +70,12 @@ public class Cashier extends Employee
                 history(1, historyTag);
             }
             
-            else if (choice == 6)
-            {
-                Reciept r = new Reciept();
-            }
-            
             else if (choice == 7)
+            {
+            	reciDisplay();
+            }
+
+            else if (choice == 8)
             {
             	return;
             }
@@ -77,37 +83,28 @@ public class Cashier extends Employee
     }
 
     // Shows current ( Request at head of queue ), and pending
-    // TODO: limit for paid
     @Override
     public void displayRequest() {
-        System.out.println("----  Current  ----");
         if (cashierQ.isEmpty()){
             System.out.println("No items in queue");
             return;
-        } 
+        }
 
-        LinkedList<QueueRequest> temp = new LinkedList<>();
-        temp.add(cashierQ.peek());
-        qm.loadViewQueue(temp, true, "Pending Payment");
-
-        System.out.println("=== PENDING ===");
-        qm.loadViewQueue(qs.PQtoList(cashierQ), false, "Pending Payment");
+        System.out.println("===== Current =====");
+        qm.loadViewQueue(cashierQ.peek(), true);
     }
 
     private void requestStatus() {
-        displayRequest();
+
+        System.out.println("----  PENDING  ----");
+        qm.loadViewQueue(qs.PQtoList(cashierQ), false, true, false, 0);
 
         System.out.println("----  PAUSED  ----");
-        boolean found2 = qm.loadViewQueue(pauseQ, false, "Paused");
-        if (!found2) {
+        if (!qm.loadViewQueue(pauseQ, false, true, false, 10)) {
             System.out.println("No paused payments.");
         }
 
-        System.out.println("----  PAID  ----");
-        boolean found = qm.loadViewQueue(QueueSystem.getAccountQ(), false, "Paid");
-        if (!found) {
-            System.out.println("No paid payments.");
-        }
+        displayRequest();
 
     }
 
@@ -121,42 +118,55 @@ public class Cashier extends Employee
 
             super.requestManager();
             
-            int select = system.validate().minMaxXChoice("X - Go Back, 1 - Select request at top, 2 - Pause request at top, 3 - Unpause request, 4 - Cancel request", 1, 4);
-            if (select == -1) return;
+            String select = system.validate().requireText("X - Go Back, G - Go to payment, P - Pause, U - Unpause request, V - View Request List, C - Cancel");
 
             switch(select) {
 
                 // Payment
-                case 1:
+                case "R": case "r":
                 paid(null, 0);
                 break;
 
                 // Pause
-                case 2:
+                case "P": case "p":
                 if (cashierQ.isEmpty()){
                     System.out.println("No items in queue");
                     break;
-                } 
+                }
+
                 if (!system.validate().confirm("Are you sure you want to pause Request: " + cashierQ.peek().getId())) break;
                 qm.pause(system.genDate());
-                System.out.println("Request at head paused");
+                System.out.println("Request paused");
                 break;
 
                 // Unpause
-                case 3:
+                case "U": case "u":
                 unpause();
                 break;
 
+                // View Request
+                case"V": case "v":
+                requestStatus();
+                break;
+
                 // Cancel
-                case 4:
+                case "C": case "c":
                 if (cashierQ.isEmpty()) {
                     System.out.println("No items in queue");
                     return;
                 }
 
                 if (!system.validate().confirm("Are you sure you want to cancel Request: " + cashierQ.peek().getId())) break;
-                qm.dequeue("Cancelled", "CASHIER", system.genDate(), cashierQ, 0);
+                qm.dequeue("Cancelled", "CASHIER", system.genDate(), cashierQ);
                 System.out.println("Current request cancelled");
+                break;
+
+                // Back
+                case "X": case "x":
+                return;
+
+                default:
+                System.out.println("Invalid Selection");
                 break;
             }
 
@@ -168,7 +178,10 @@ public class Cashier extends Employee
 
         while (true) {
 
-            if (index == 0 && qs.emptyDisplay(cashierQ, "No pending request")) break;
+            if (index == 0 && cashierQ.isEmpty()) {
+                System.out.println("No pending Requests");
+                break;
+            }
             if (index == 0) cur = cashierQ.peek();
 
             System.out.println("== Confirm Payment ==");
@@ -198,8 +211,10 @@ public class Cashier extends Employee
                 break;
             }
 
-            qm.moveToWindow(system.genDate() ,(index - 1));
-            System.out.println("Successfully Paid, sent to accounting");
+            if (index == 0) qm.moveToWindow("Paid", "ACCOUNTING", system.genDate(), cashierQ, QueueSystem.getAccountQ());
+            else  qm.moveToWindow("Paid", "ACCOUNTING", system.genDate(), pauseQ, QueueSystem.getAccountQ(), index - 1);
+            
+            System.out.println("Successfully paid, pending approval.");
             Cashier.Reciept rec = new Reciept(cur, String.valueOf(payment));
             rec.appendReci(cur, input);
             if (system.validate().confirm("Exit? ")) return;
@@ -207,32 +222,34 @@ public class Cashier extends Employee
         }
     }
 
-    // TODO: alter changes
     private void unpause() {
         while (true) {
-            if (qs.emptyDisplay(pauseQ, "No paused request")) break;
+            System.out.println("----  PAUSED  ----");
+            if (!qm.loadViewQueue(pauseQ, false, true, false, 0)) {
+                System.out.println("No paused payments.");
+            }
 
             int length = pauseQ.size();
-            qm.loadViewQueue(pauseQ);
+
             int select2 = system.validate().minMaxXChoice("Type the index of the paused request you want to select, (x to go back)", 1, length);
             if (select2 == -1) {
                 break;
             }
 
             while (true) {
-                String select3 = system.validate().requireText("P - Unpause; Mark as paid, C - Cancel Request, X - Go back");
+                String select3 = system.validate().requireText("P - Unpause; Mark as paid, C - Cancel, X - Go back");
 
                 switch (select3) {
                     case "C", "c" -> {
                         if (!system.validate().confirm("Are you sure ?")) break;
-                        qm.unpause("Cancelled", system.genDate(), false, (select2 - 1));
+                        qm.dequeue("Cancelled", "CASHIER", system.genDate(), pauseQ, (select2 - 1));
                         System.out.println("Succesfully unpaused request");
                         break;
                     }
 
                     case "P", "p" -> {
                         if (!system.validate().confirm("Are you sure ?")) break;
-                        paid(qm.unpause(null, null, true, (select2 - 1)), select2);
+                        paid(pauseQ.get((select2 - 1)), select2);
                         break;
                     }
 
@@ -252,8 +269,35 @@ public class Cashier extends Employee
         }
     }
 
+    // TODO: display for no reciepts
+    public void reciDisplay() {
+        Reciept r = new Reciept();
 
-    // TODO:pages for reciepts
+        List<String> list = r.read();
+        System.out.println(list);
+        int i = (list.size() + 9) / 10;
+        int current = 1;
+
+        r.display(list, 1, i);
+
+        while (true) {
+            int input = system.validate().minMaxXChoice("Go to page ('x' to go back):", 1, i);
+
+            if (input == current) {
+                System.out.println("Already on page " + input);
+                continue;
+            }
+            if (input == -1) {
+                return;
+            }
+
+            r.display(list, input, i);
+            current = input;
+
+        }
+    }
+
+
     public static class Reciept extends DocuHandler{
 
         @Override
@@ -269,7 +313,7 @@ public class Cashier extends Employee
             System.out.printf("   %-20s-%10s%n%n", request.getDocument(), request.getPrice());
         }
 
-        // Reciept and append to file
+        // Final Reciept
         public Reciept(QueueRequest request, String payment) {
             this(request);
 
@@ -281,10 +325,7 @@ public class Cashier extends Employee
 
         }
 
-        // Reciept and append to file
-        public Reciept() {
-            display();
-        }
+        public Reciept() {}
 
 
         public final void appendReci(QueueRequest request, String payment) {
@@ -292,17 +333,30 @@ public class Cashier extends Employee
             append(line);
         }
 
-        private void display() {
-            List<String> read = read();
+        private void display(List<String> read, int page, int maxPage) {
+            
+            Collections.reverse(read);
+            int items = 0;
 
             if (read != null) {
                 for (String line : read) {
+
+                    items++;
+                    if (items < (page - 1) * 10) continue;
+                    else if (items > page * 10) break;
+
                     String parts[] = line.split(",");
 
-                    System.out.println("-".repeat(50));
+                    System.out.println(items);
                     QueueRequest request = QueueRequest.fromLine(line);
                     Reciept r = new Reciept(request, parts[7]);
                 }
+            }
+
+            if (maxPage == 1) {
+                System.out.println(" Viewing page " + page);
+            } else {
+                System.out.println(" Viewing page " + page + " out of " + maxPage);
             }
         }
 

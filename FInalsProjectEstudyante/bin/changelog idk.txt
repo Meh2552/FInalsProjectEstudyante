@@ -1,0 +1,82 @@
+--- Basta latest as of 11/14 ---
+(not 100% accurate i think)
+
+> QueueSystem QueueManager, HistoryManager?, ViewQueue, ViewHistory  and Reciept Class
+> Reciept class in cashier
+> Methods and functions sa cashier
+> Methods and functions sa accounting
+> Methods and functions sa Registrar
+> Methods and functions sa Admin
+> Added Methods to employee, wla naman ata masyado naiba
+
+- Files para sa queue, receipt, at history (hindi na change, nilagay ko lang na meron)
+- Manage acc para sa student (not sure if nagawa ko na as of writing)
+- Moved history to user
+
+> helpdesk system (idk specifics kya eto nalang)
+
+States ng windows
+
+NEW REQUEST
+      \ 		 Cancelled/Expired    (Registrar)	Processing ---> Released ----> For Pick-up --> Complete
+State: Pending Payment <		      Approved --------<      \            \		   \
+       (Cashier)        Paid  ---------------<			\ _ _ _\ _ _ _ _ _ _\ _ _ _ _ _ _ _ \ _ Expired
+			(Accounting)	      Denied / Expired	  		(Extended Deadline)
+
+------11/22/2025------
+
+DocuManager
+- added methods
+
+Employee
+- added history display
+
+> Queue & Queue Manager Class
+
+Validator
+- added minmax to validator
+------11/21/2025------
+
+DocuRequest
+- added req num
+
+DocuManager
+- added generate id
+
+Queue & Queue Manager Class
+
+Student
+- pagkatapos magrequest, iaadd sa queue.
+
+------11/21/2025------
+
+UserAuth - login & signup
+
+signup
+- random na yung student id ni user
+- pede na magback for each input ex. username -> password -> back si user -> username (nilagay ko input "x" pero pede naman ibahin"
+- confirm pass
+- display yung inputs (except password) sa huli sunod confirm
+
+login
+- ginawa ko lang loop 
+- pede na magback
+
+UserManager
+- added studentNumberGenerate() d2 generate student num
+
+Docu Request
+- added date
+
+DocuManager
+- added genDate (nilagay ko nalang d2 kyo bala kung iibahin ba)
+
+Student
+- added delete account
+- editconfirm thing for making req
+- change some of the formatting for view request (ibahin nyo nalang idk)
+
+Admin
+- may category yung pagdisplay ng viewUser
+- Back
+- Admin sa add employees

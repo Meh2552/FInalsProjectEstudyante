@@ -124,4 +124,8 @@ public abstract class Employee extends User
 
     }
 
+    public void createRequest() {
+        
+    }
+
 }

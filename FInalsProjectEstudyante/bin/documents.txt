@@ -1,0 +1,16 @@
+Roland,02000-456512,SF10,Cancelled,[24-11-2025] 13:28,0001
+Roland,02000-456512,Form137,Denied,[24-11-2025] 13:28,0002
+Roland,02000-456512,Good Moral,Paused,[24-11-2025] 13:28,0003
+Roland,02000-456512,Enrollment Certificate,Denied,[24-11-2025] 13:28,0004
+s1,02000-123456,SF10,Denied,[24-11-2025] 13:28,0005
+s1,02000-123456,Form137,Ready for Pick-Up,[24-11-2025] 13:28,0006
+s1,02000-123456,Good Moral,Completed,[24-11-2025] 13:28,0007
+s1,02000-123456,Enrollment Certificate,Paused,[24-11-2025] 13:28,0008
+s2,02000-160420,SF10,Processing,[24-11-2025] 13:29,0009
+s2,02000-160420,Form137,Ready for Pick-Up,[24-11-2025] 13:29,0010
+s2,02000-160420,Good Moral,Cancelled,[24-11-2025] 13:29,0011
+s2,02000-160420,Enrollment Certificate,Cancelled,[24-11-2025] 13:29,0012
+s1,02000-123456,SF10,Processing,[30-11-2025] 21:49,0013
+s1,02000-123456,Form137,Pending Payment,[30-11-2025] 21:49,0014
+s1,02000-123456,Good Moral,Pending Payment,[30-11-2025] 21:49,0015
+s1,02000-123456,Enrollment Certificate,Pending Payment,[30-11-2025] 21:49,0016
