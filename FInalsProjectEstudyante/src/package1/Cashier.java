@@ -91,7 +91,7 @@ public class Cashier extends Employee
         qm.loadViewQueue(temp, true, "Pending Payment");
 
         System.out.println("=== PENDING ===");
-        qm.loadViewQueue(cashierQ, false, "Pending Payment");
+        qm.loadViewQueue(qs.PQtoList(cashierQ), false, "Pending Payment");
     }
 
     private void requestStatus() {
@@ -114,7 +114,10 @@ public class Cashier extends Employee
     @Override
     public void requestManager() {
         while (true) {
-            if (qs.emptyDisplay(pauseQ, "No pending requests") && qs.emptyDisplay(cashierQ, "No pending requests")) return;
+            if (pauseQ.isEmpty() && cashierQ.isEmpty()) {
+                System.out.println("No items in queue");
+                return;
+            }
 
             super.requestManager();
             
@@ -130,7 +133,10 @@ public class Cashier extends Employee
 
                 // Pause
                 case 2:
-                if (qs.emptyDisplay(cashierQ, "No pending request")) break;
+                if (cashierQ.isEmpty()){
+                    System.out.println("No items in queue");
+                    break;
+                } 
                 if (!system.validate().confirm("Are you sure you want to pause Request: " + cashierQ.peek().getId())) break;
                 qm.pause(system.genDate());
                 System.out.println("Request at head paused");
@@ -143,7 +149,10 @@ public class Cashier extends Employee
 
                 // Cancel
                 case 4:
-                if (qs.emptyDisplay(cashierQ, "No pending request")) break;
+                if (cashierQ.isEmpty()) {
+                    System.out.println("No items in queue");
+                    return;
+                }
 
                 if (!system.validate().confirm("Are you sure you want to cancel Request: " + cashierQ.peek().getId())) break;
                 qm.dequeue("Cancelled", "CASHIER", system.genDate(), cashierQ, 0);

@@ -1,5 +1,7 @@
 package package1;
 
+import java.time.*;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 public class QueueSystem {
@@ -55,9 +57,9 @@ public class QueueSystem {
     }
 
 
-    private static PriorityQueue<QueueRequest> casQ = new PriorityQueue<>();
+    private static PriorityQueue<QueueRequest> casQ = new PriorityQueue<>(( a, b ) -> Integer.parseInt(a.getPriority()) - Integer.parseInt(b.getPriority()));
     private static LinkedList<QueueRequest> pauseQ = new LinkedList<>();
-    private static PriorityQueue<QueueRequest> regQ = new PriorityQueue<>();
+    private static PriorityQueue<QueueRequest> regQ = new PriorityQueue<>(( a, b ) -> Integer.parseInt(a.getPriority()) - Integer.parseInt(b.getPriority()));
     private static LinkedList<QueueRequest> accQ = new LinkedList<>();
 
     public static PriorityQueue<QueueRequest> getCashierQ() {
@@ -89,6 +91,23 @@ public class QueueSystem {
         @Override
         public String getFileName() {
             return "queue.txt";
+        }
+
+        public String genPriority(List<QueueRequest> queue) {
+            int i = 1;
+            for (QueueRequest request : queue) {
+
+                int check = Integer.parseInt(request.getPriority());
+                if (i <= check) {
+                    i = check;
+                }
+
+                i++;
+
+            }
+
+            String out = String.valueOf(i);
+            return out;
         }
         
         private void writeQ() {
@@ -195,7 +214,7 @@ public class QueueSystem {
 
 
         // Move request to next window/request state 
-        public void moveToWindow(String state, String window, String date, LinkedList<QueueRequest> from, PriorityQueue<QueueRequest> to) {
+        public void moveToWindow(String state, String window, String date, PriorityQueue<QueueRequest> from, PriorityQueue<QueueRequest> to) {
 
             QueueRequest pos = from.poll();
             to.add(pos);
@@ -218,8 +237,15 @@ public class QueueSystem {
         // Dequeues request at head
         public void dequeue(String state, String window, String date, LinkedList<QueueRequest> queue, int index) {
 
-
             QueueRequest pos = queue.remove(index);
+            updateInfo(pos, state, window, date);
+            writeChange(pos);
+
+        }
+
+        public void dequeue(String state, String window, String date, PriorityQueue<QueueRequest> queue) {
+
+            QueueRequest pos = queue.poll();
             updateInfo(pos, state, window, date);
             writeChange(pos);
 
@@ -233,7 +259,7 @@ public class QueueSystem {
                 String[] part = lines.split(",");
 
                 if (part.length > 0 && part[5].equals(id)) {
-                    QueueRequest qr = new QueueRequest(id, part[1], part[2], part[3], "CASHIER", part[4], price);
+                    QueueRequest qr = new QueueRequest(id, part[1], part[2], part[3], "CASHIER", part[4], price, genPriority(PQtoList(casQ)));
                     getCashierQ().add(qr);
                     writeQ();
                     getHistoryManager().appendHist(qr, price);
@@ -290,6 +316,7 @@ public class QueueSystem {
 
             return stateList;
         }
+
 
         // Load certain states of request in queue, returns true if queue isn't empty
         public boolean loadViewQueue(List<QueueRequest> queue, boolean willDisplayHeader, String state) {
@@ -357,7 +384,66 @@ public class QueueSystem {
             }
 
         }
-            
+
+        // The expiry date can be changed
+        // TODO: add accounting and registrar and add to system
+        public void expire(String now) {
+
+            Expire e = new Expire();
+            e.expireP(casQ, now,1);
+            e.expireL(pauseQ, now, 1);
+        }
+
+
+        protected class Expire {
+
+            // Cycles through one of the queues, then, if request date is more than daysToExpire, then it will label the request as expired
+            // daysToExpire starts at 1, basically days elapsed, so if current date is 12 and expiry is in 1 day then it expires at the 13th
+            public void expireP(PriorityQueue<QueueRequest> queue, String now, int daysElapsedExpire) {
+                LocalDate time = LocalDate.now();
+
+                for (QueueRequest request : queue) {
+                    String date = request.getDate().substring(1, 10);
+                    String parts[] = date.split("-");
+                    LocalDate reqDate = LocalDate.of(Integer.parseInt(parts[2]), Integer.parseInt(parts[1]), Integer.parseInt(parts[0]));
+
+                    if (time.isAfter(reqDate)) {
+                        long days = ChronoUnit.DAYS.between(time, reqDate);
+                        
+                        if (days >= daysElapsedExpire) {
+                        queue.remove(request);
+                        updateInfo(request, "EXPIRED", request.getWindow(), now);
+                        writeChange(request);
+                        }
+
+                    }
+                }
+            }
+
+            public void expireL(LinkedList<QueueRequest> queue, String now, int daysElapsedExpire) {
+                LocalDate time = LocalDate.now();
+                int count = 0;
+
+                for (QueueRequest request : queue) {
+                    String date = request.getDate().substring(1, 10);
+
+                    String parts[] = date.split("-");
+                    LocalDate reqDate = LocalDate.of(Integer.parseInt(parts[2]), Integer.parseInt(parts[1]), Integer.parseInt(parts[0]));
+
+                    if (time.isAfter(reqDate)) {
+                    long days = ChronoUnit.DAYS.between(time, reqDate);
+
+                    if (days > daysElapsedExpire) {
+                    dequeue("EXPIRED", request.getWindow(), now, queue, count);
+                    }
+
+                    }
+                    count++;
+                }
+            }
+
+        }
+    
     }
 
     // ~~~~~~~~~~~~~~~~~~~~

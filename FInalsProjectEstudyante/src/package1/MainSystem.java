@@ -88,13 +88,4 @@ public class MainSystem
 	        
 	}
 
-	public String genDate(String pattern) {
-
-        LocalDateTime time = LocalDateTime.now();
-        DateTimeFormatter form1 = DateTimeFormatter.ofPattern(pattern);
-
-        String formDate = time.format(form1);
-        return formDate;
-
-    }
 }
