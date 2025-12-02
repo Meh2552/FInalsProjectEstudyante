@@ -110,7 +110,7 @@ public class QueueSystem {
             return out;
         }
         
-        private void writeQ() {
+        public void writeQ() {
 
             ArrayList<String> lines = new ArrayList<>();
             if (!getCashierQ().isEmpty()) {
@@ -222,6 +222,16 @@ public class QueueSystem {
             
             to.add(pos);
             updateInfo(pos, state, window, date, genPriority(PQtoList(to)));
+            writeChange(pos);
+
+        }
+
+        public void moveToWindow(String state, String window, String date, LinkedList<QueueRequest> from, LinkedList<QueueRequest> to, int index) {
+
+            QueueRequest pos = from.remove(index);
+            
+            to.add(pos);
+            updateInfo(pos, state, window, date, genPriority(to));
             writeChange(pos);
 
         }

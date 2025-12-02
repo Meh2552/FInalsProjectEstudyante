@@ -43,7 +43,7 @@ public class Cashier extends Employee
             
             else if (choice == 2)
             {
-                reciDisplay();
+                createRequest();
             }
 
             else if (choice == 3)

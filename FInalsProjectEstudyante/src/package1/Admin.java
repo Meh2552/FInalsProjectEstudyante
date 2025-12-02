@@ -6,9 +6,6 @@ public class Admin extends User
 {
 
     private UserManager um;
-    private LinkedList<QueueRequest> accQ;
-    private QueueSystem qs;
-    private QueueSystem.QueueManager qm;
 
     public Admin(MainSystem system, UserRecord record) {
         super(system, record);
@@ -24,9 +21,9 @@ public class Admin extends User
             System.out.println("[3] Respond to Concern");
             System.out.println("[4] View All Helpdesk Responses");
             System.out.println("[5] See Queue History");
-            System.out.println("[5] Delete User");
-            System.out.println("[6] Logout");
-            int choice = system.validate().menuChoice("Choose: ", 6);
+            System.out.println("[6] Delete User");
+            System.out.println("[7] Logout");
+            int choice = system.validate().menuChoice("Choose: ", 7     );
             
             if (choice == 1)
             {
@@ -57,7 +54,7 @@ public class Admin extends User
             	deleteUser();
             }
             
-            else if (choice == 6)
+            else if (choice == 7)
             {
             	return;
             }
@@ -267,7 +264,7 @@ public class Admin extends User
                 System.out.println("[4] All");
                 System.out.println("[5] Back");
 
-                switch (system.validate().menuChoice("Choose", 5)) {
+                switch (system.validate().menuChoice("Choose: ", 5)) {
 
                 case 1:
                 ArrayList<String> historyTag = new ArrayList<>();

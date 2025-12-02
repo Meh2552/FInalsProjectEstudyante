@@ -26,13 +26,14 @@ public class Registrar extends Employee
         {
             System.out.println("=== REGISTRAR MENU ===");
             System.out.println("[1] View Requests");
-            System.out.println("[2] Manage Requests");
-            System.out.println("[3] Respond to Helpdesk");
-            System.out.println("[4] View Helpdesk Responses");
-            System.out.println("[5] See History");
-            System.out.println("[6] Logout");
+            System.out.println("[2] Create Request");
+            System.out.println("[3] Manage Requests");
+            System.out.println("[4] Respond to Helpdesk");
+            System.out.println("[5] View Helpdesk Responses");
+            System.out.println("[6] See History");
+            System.out.println("[7] Logout");
             
-            int choice = system.validate().menuChoice("Choose: ", 6);
+            int choice = system.validate().menuChoice("Choose: ", 7);
             
             if (choice == 1)
             {
@@ -41,27 +42,32 @@ public class Registrar extends Employee
             
             else if (choice == 2)
             {
-            	requestManager();
+            	createRequest();
             }
-            
+
             else if (choice == 3)
             {
-            	respondToTicket();
+            	requestManager();
             }
             
             else if (choice == 4)
             {
-            	viewResponse();
+            	respondToTicket();
             }
             
             else if (choice == 5)
+            {
+            	viewResponse();
+            }
+            
+            else if (choice == 6)
             {
             ArrayList<String> historyTag = new ArrayList<>();
             historyTag.add("ACCOUNTING");
             historyTag.add("Approved");
             history(1, historyTag);
             }
-            else if (choice == 6) {
+            else if (choice == 7) {
                 return;
             }
         }
@@ -69,102 +75,89 @@ public class Registrar extends Employee
 
     @Override
     public void displayRequest() {
-        qm.loadViewQueue(regQ);
+
+        System.out.println("----  ONGOING REQUESTS  ----");
+        if (!qm.loadViewQueue(regQ, false, false, false, 0)) {
+            System.out.println("No ongoing requests.");
+        }
+
+    }
+
+    private void currentDisplay(int index) {
+
+        System.out.println("===== Current =====");
+        qm.loadViewQueue(regQ.get(index), true);
+
     }
 
     @Override
     public void requestManager() {
         while (true) {
 
-            if (qs.emptyDisplay(regQ, "No pending requests")) return;
-            super.requestManager();
+            if (regQ.isEmpty()) {
+                System.out.println("No items in queue");
+                return;
+            }
             
-            int select = system.validate().minMaxXChoice("X - Go Back, 1 - Mark for processing, 2 - Release Document, 3 - Mark for Pick-Up, 4 - Complete Request, 5 - Cancel Request", 1, 5);
-            if (select == -1) return;
+            displayRequest();
+            int index = selectRequest();
+            if (index == -1) return;
 
-            int index;
+            while (true) {
+            currentDisplay(index);
+            String select = system.validate().requireText("X - Go Back, U - Update State, F - Finish Request, S - Send To Window,  C - Cancel, V - View Requests");
+
             switch(select) {
 
-                // Processing
-                case 1:
-                index = selectRequest("Approved");
-                if (index == -1) break;
-                
-                qm.moveToWindow("Processing", system.genDate(), index);
-                System.out.println("Successfully marked for processing");
+                // Update State
+                case "U": case "u":
+                updateState(index);
                 break;
 
-                // Released
-                case 2:
-                index = selectRequest("Processing");
-                if (index == -1) break;
-                qm.moveToWindow("Released", system.genDate(), index);
-                System.out.println("Request released");
+                // Send to Window
+                case "S": case "s":
+                sendToWindow(index);
                 break;
 
-                // Pick-Up
-                case 3:
-                index = selectRequest("Released");
-                if (index == -1) break;
-                qm.moveToWindow("Ready for Pick-Up", system.genDate(), index);
-                System.out.println("Request marked for 'Pick-up'");
-                break;
-
-                // Complete
-                case 4:
-                index = selectRequest("Ready for Pick-Up");
-                if (index == -1) break;
+                // Finish
+                case "F": case "f":
+                if (!system.validate().confirm("Finishing a request will remove it, finish request? " + regQ.get(index).getId())) continue;
                 qm.dequeue("Completed", "REGISTRAR", system.genDate(), regQ, index);
                 System.out.println("Request resolved");
                 break;
 
                 // Cancel
-                case 5:
-                index = selectRequest();
-                if (index == -1) break;
+                case "C": case "c":
+                if (!system.validate().confirm("Are you sure you want to cancel Request: " + regQ.get(index).getId())) continue;
                 qm.dequeue("Cancelled", "REGISTRAR", system.genDate(), regQ, index);
                 System.out.println("Cancelled successfully");
                 break;
+
+                // View Requests
+                case "V": case "v":
+                displayRequest();
+                continue;
+
+                // Back
+                case "X": case "x":
+                break;
+
+                default:
+                System.out.println("Invalid Selection");
+                continue;
+
+            }
+
+            break;
+
             }
 
         }
 
-    }
-
-    private int selectRequest(String state) {
-        if (qs.emptyDisplay(regQ, "No pending requests")) return -1;
-        
-        LinkedList<QueueRequest> requests = new LinkedList<>();
-        List<QueueRequest> r = qm.lookForState(state, regQ);
-
-        if (r == null) {
-            System.out.println("No pending requests");
-            return -1;
-        }
-        requests.addAll(r);
-
-        int length = requests.size();
-        qm.loadViewQueue(requests, true, state);
-
-        int select = -1, index;
-        while (true) { 
-            select = system.validate().minMaxXChoice("Type the index of the request you want to select, (x to go back)", 1, length);
-            if (select == -1) {
-                return -1;
-            }
-
-            index = regQ.indexOf(requests.get(select - 1));
-            if (system.validate().confirm("Are you sure you want to select Request: " + regQ.get(index).getId())) break;
-            
-        }
-
-
-        return index;
     }
 
     // Selects from whole list 
     private int selectRequest() {
-        displayRequest();
 
         int select = 0;
         while (true) { 
@@ -178,6 +171,173 @@ public class Registrar extends Employee
         }
 
         return select - 1;
+    }
+
+    private void updateState(int index) {
+        while (true) {
+            currentDisplay(index);
+
+            String select = system.validate().requireText("X - Go Back, P - Processing, R - Release, U - Ready for Pick-Up, Type for custom");
+
+            switch(select) {
+
+                // Mark for Processing
+                case "P": case "p":
+                if (!system.validate().confirm("Mark Request " + regQ.get(index).getId() + " as 'Processing' ")) continue;
+                qm.moveToWindow("Processing", "REGISTRAR", system.genDate(), regQ, regQ, index);
+                System.out.println("Successfully marked for processing");
+                break;
+
+                // Mark for Release
+                case "R": case "r":
+                if (!system.validate().confirm("Mark Request " + regQ.get(index).getId() + " as 'Released' ")) continue;
+                qm.moveToWindow("Released", "REGISTRAR", system.genDate(), regQ, regQ, index);
+                System.out.println("Request released");
+                break;
+
+                // Mark for Pick-Up
+                case "U": case "u":
+                if (!system.validate().confirm("Mark Request " + regQ.get(index).getId() + " as 'Ready for Pick-Up' ")) continue;
+                qm.moveToWindow("Ready for Pick-Up", "REGISTRAR", system.genDate(), regQ, regQ, index);
+                System.out.println("Sucessfully marked for pick-up");
+                break;
+
+                // Back
+                case "X": case "x":
+                break;
+
+                default:
+                if (!system.validate().confirm("Mark Request " + regQ.get(index).getId() + " as '" + select + "'")) continue;
+                qm.moveToWindow(select, "REGISTRAR", system.genDate(), regQ, regQ, index);
+                System.out.println("Request marked as " + select);
+                break;
+
+            }
+
+            break;
+        }
+    }
+
+    // Method for send to window
+    private void sendToWindow(int index) {
+        while (true) { 
+
+            System.out.println("----  Send to Window  ----");
+            System.out.println("[1] Cashier");
+            System.out.println("[2] Accounting");
+            System.out.println("[X] Back");
+
+            int input = system.validate().minMaxXChoice("Choose which window", 1, 2);
+            QueueRequest request = regQ.get(index);
+
+            switch(input) {
+
+                // Cashier
+                case 1:
+                cashierSendTo(request);
+                break;
+
+                // Accounting
+                case 2:
+                accountingSendTo(request);
+                break;
+
+                // Back
+                case -1:
+                return;
+
+            }
+
+            break;
+        }
+    }
+
+
+    private void cashierSendTo(QueueRequest request) {
+
+        System.out.println("- Cashier Selected \n");
+        String price, state;
+        double priceD = 0;
+
+        while (true) {
+
+            state = system.validate().requireText("Enter request state (X to go back)");
+            if (state.matches("[Xx]")) return;
+
+            price = system.validate().requireText("Input payment (X to go back)");
+            if (price.matches("[Xx]")) continue;
+                
+            try {
+            priceD = Double.parseDouble(price);
+            } 
+                
+            catch (Exception e) {
+            System.out.println("Invalid input. Try again.");
+            continue;
+            }
+
+            System.out.println("----  Confirm Send ----");
+            System.out.println("From: Registrar    To: Cashier");
+            System.out.println("ID: " + request.getId() + "     Requesting: " + request.getDocument());
+            System.out.println("State " + state + "    Price " + priceD);
+
+            switch (system.validate().editCancelContinue()) {
+
+                case "EDIT" -> {
+                continue;
+                }
+
+                case "CANCEL" -> {
+                return;
+                }
+
+                case "CONTINUE" -> {}
+            }
+
+            break;
+
+        }
+        price = "" + priceD;
+        request.setPricee(price);
+
+        qm.moveToWindow(state, "CASHIER", system.genDate(), regQ, QueueSystem.getCashierQ(), regQ.indexOf(request));
+        System.out.println("Request sent to cashier");
+    }
+
+    private void accountingSendTo(QueueRequest request) {
+
+        System.out.println("- Accounting Selected \n");
+        String state;
+
+        while (true) {
+
+            state = system.validate().requireText("Enter request state (X to go back)");
+            if (state.matches("[Xx]")) break;
+
+            System.out.println("----  Confirm Send ----");
+            System.out.println("From: Registrar    To: Accounting");
+            System.out.println("ID: " + request.getId() + "     Requesting: " + request.getDocument());
+            System.out.println("State: " + state );
+
+            switch (system.validate().editCancelContinue()) {
+
+                case "EDIT" -> {
+                continue;
+                }
+
+                case "CANCEL" -> {
+                return;
+                }
+
+                case "CONTINUE" -> {}
+            }
+
+            break;
+
+        }
+
+        qm.moveToWindow(state, "ACCOUNTING", system.genDate(), regQ, QueueSystem.getAccountQ(), regQ.indexOf(request));
+        System.out.println("Request sent to accounting");
     }
 
 }

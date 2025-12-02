@@ -24,14 +24,15 @@ public class Accounting extends Employee
         {
             System.out.println("\n=== ACCOUNTING MENU ===");
             System.out.println("[1] View All Requests");
-            System.out.println("[2] Manage Requests");
-            System.out.println("[3] Respond to Helpdesk");
-            System.out.println("[4] View Helpdesk Responses");
-            System.out.println("[5] See History");
-            System.out.println("[5] View Reciepts");
-            System.out.println("[6] Logout");
+            System.out.println("[2] Create Request");
+            System.out.println("[3] Manage Requests");
+            System.out.println("[4] Respond to Helpdesk");
+            System.out.println("[5] View Helpdesk Responses");
+            System.out.println("[6] See History");
+            System.out.println("[7] View Reciepts");
+            System.out.println("[8] Logout");
             
-            int choice = system.validate().menuChoice("Choose: ", 6);
+            int choice = system.validate().menuChoice("Choose: ", 8);
             
             if (choice == 1)
             {
@@ -40,31 +41,40 @@ public class Accounting extends Employee
             
             else if (choice == 2)
             {
-            	requestManager();
+            	createRequest();
             }
-            
+
             else if (choice == 3)
             {
-                respondToTicket();
+            	requestManager();
             }
             
             else if (choice == 4)
             {
+                respondToTicket();
+            }
+            
+            else if (choice == 5)
+            {
                 viewResponse();
             }
-            else if (choice == 5)	
+
+            else if (choice == 6)	
             {
                 ArrayList<String> historyTag = new ArrayList<>();
                 historyTag.add("ACCOUNTING");
                 historyTag.add("Approved");
                 history(1, historyTag);
             }
-            else if (choice == 6) {
-                return;
+
+            else if (choice == 7) {
+                Cashier c = new Cashier(system, record);
+                c.reciDisplay();
             }
-            else if (choice == 6)
+
+            else if (choice == 8)
             {
-                Cashier.Reciept r = new Cashier.Reciept();
+                return;
             }
         }
     }
