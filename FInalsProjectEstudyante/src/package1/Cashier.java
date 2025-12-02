@@ -34,7 +34,7 @@ public class Cashier extends Employee
             System.out.println("[6] See History");
             System.out.println("[7] View Reciepts");
             System.out.println("[8] Logout");
-            int choice = system.validate().menuChoice("Choose: ", 7);
+            int choice = system.validate().menuChoice("Choose: ", 8);
             
             if (choice == 1)
             {
@@ -104,8 +104,6 @@ public class Cashier extends Employee
             System.out.println("No paused payments.");
         }
 
-        displayRequest();
-
     }
 
     @Override
@@ -123,7 +121,7 @@ public class Cashier extends Employee
             switch(select) {
 
                 // Payment
-                case "R": case "r":
+                case "G": case "g":
                 paid(null, 0);
                 break;
 
@@ -227,17 +225,18 @@ public class Cashier extends Employee
             System.out.println("----  PAUSED  ----");
             if (!qm.loadViewQueue(pauseQ, false, true, false, 0)) {
                 System.out.println("No paused payments.");
+                return;
             }
 
             int length = pauseQ.size();
 
-            int select2 = system.validate().minMaxXChoice("Type the index of the paused request you want to select, (x to go back)", 1, length);
+            int select2 = system.validate().minMaxXChoice("Type the index of the paused request you want to select, (x to go back)", 1, length); //TODO: confirm selected
             if (select2 == -1) {
                 break;
             }
 
             while (true) {
-                String select3 = system.validate().requireText("P - Unpause; Mark as paid, C - Cancel, X - Go back");
+                String select3 = system.validate().requireText("G - Go to payment, C - Cancel, X - Go back");
 
                 switch (select3) {
                     case "C", "c" -> {
@@ -247,7 +246,7 @@ public class Cashier extends Employee
                         break;
                     }
 
-                    case "P", "p" -> {
+                    case "G", "g" -> {
                         if (!system.validate().confirm("Are you sure ?")) break;
                         paid(pauseQ.get((select2 - 1)), select2);
                         break;

@@ -84,11 +84,13 @@ public class Accounting extends Employee
     private void requestStatus() {
 
         System.out.println("----  PENDING  ----");
-        qm.loadViewQueue(qs.PQtoList(accQ), false, false, false, 0);
+        if (!qm.loadViewQueue(qs.PQtoList(accQ), false, false, false, 0)) {
+            System.out.println("No pending payments.");
+        }
 
         System.out.println("----  Approved  ----");
-        if (!qm.loadViewQueue(QueueSystem.getRegistarQ(), false, true, true, 5)) {
-            System.out.println("No paused payments.");
+        if (!qm.loadViewQueue(QueueSystem.getRegistarQ(), false, "Approved", false, false, false, 5)) {
+            System.out.println("No approved payments.");
         }
 
     }
@@ -123,8 +125,7 @@ public class Accounting extends Employee
 
                 // Send to Window
                 case "S": case "s":
-                System.out.println("----  PENDING  ----");
-                qm.loadViewQueue(qs.PQtoList(accQ), false, false, false, 0);
+                sendToWindow();
                 break;
 
                 // Cancel
@@ -153,4 +154,123 @@ public class Accounting extends Employee
         
     }
 
+    private void sendToWindow() {
+        while (true) { 
+
+            System.out.println("----  Send to Window  ----");
+            System.out.println("[1] Cashier");
+            System.out.println("[2] Registrar");
+            System.out.println("[X] Back");
+
+            int input = system.validate().minMaxXChoice("Choose which window", 1, 2);
+            QueueRequest request = accQ.peek();
+
+            switch(input) {
+
+                // Cashier
+                case 1:
+                cashierSendTo(request);
+                break;
+
+                // Registrar
+                case 2:
+                registrarSendTo(request);
+                break;
+
+                // Back
+                case -1:
+                return;
+
+            }
+
+            break;
+        }
+    }
+
+    private void cashierSendTo(QueueRequest request) {
+
+        System.out.println("- Cashier Selected \n");
+        String price, state;
+        double priceD = 0;
+
+        while (true) {
+
+            state = system.validate().requireText("Enter request state (X to go back)");
+            if (state.matches("[Xx]")) return;
+
+            price = system.validate().requireText("Input payment (X to go back)");
+            if (price.matches("[Xx]")) continue;
+                
+            try {
+            priceD = Double.parseDouble(price);
+            } 
+                
+            catch (Exception e) {
+            System.out.println("Invalid input. Try again.");
+            continue;
+            }
+
+            System.out.println("----  Confirm Send ----");
+            System.out.println("From: Accounting    To: Cashier");
+            System.out.println("ID: " + request.getId() + "     Requesting: " + request.getDocument());
+            System.out.println("State " + state + "    Price " + priceD);
+
+            switch (system.validate().editCancelContinue()) {
+
+                case "EDIT" -> {
+                continue;
+                }
+
+                case "CANCEL" -> {
+                return;
+                }
+
+                case "CONTINUE" -> {}
+            }
+
+            break;
+
+        }
+        price = "" + priceD;
+        request.setPricee(price);
+
+        qm.moveToWindow(state, "CASHIER", system.genDate(), accQ, QueueSystem.getCashierQ());
+        System.out.println("Request sent to cashier");
+    }
+
+    private void registrarSendTo(QueueRequest request) {
+
+        System.out.println("- Registrar Selected \n");
+        String state;
+
+        while (true) {
+
+            state = system.validate().requireText("Enter request state (X to go back)");
+            if (state.matches("[Xx]")) break;
+
+            System.out.println("----  Confirm Send ----");
+            System.out.println("From: Accounting    To: Registrar");
+            System.out.println("ID: " + request.getId() + "     Requesting: " + request.getDocument());
+            System.out.println("State: " + state );
+
+            switch (system.validate().editCancelContinue()) {
+
+                case "EDIT" -> {
+                continue;
+                }
+
+                case "CANCEL" -> {
+                return;
+                }
+
+                case "CONTINUE" -> {}
+            }
+
+            break;
+
+        }
+
+        qm.moveToWindow(state, "REGISTRAR", system.genDate(), accQ, QueueSystem.getRegistarQ());
+        System.out.println("Request sent to registrar");
+    }
 }

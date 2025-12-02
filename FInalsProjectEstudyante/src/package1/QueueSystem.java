@@ -177,10 +177,11 @@ public class QueueSystem {
         }
 
         // Updates relevant information inside a request
-        private void updateInfo(QueueRequest request, String state, String window, String date) {
+        private void updateInfo(QueueRequest request, String state, String window, String date, String priority) {
             request.setState(state);
             request.setWindow(window);
             request.setDate(date);
+            request.setPriority(priority);
         }
 
         // Pauses a request
@@ -189,7 +190,7 @@ public class QueueSystem {
             if (getCashierQ().isEmpty()) return;
 
             QueueRequest pos = getCashierQ().poll();
-            updateInfo(pos, "Paused", "PAUSED", date);
+            updateInfo(pos, "Paused", "PAUSED", date, genPriority(getPauseQ()));
             getPauseQ().add(pos);
             writeChange(pos);
 
@@ -200,8 +201,8 @@ public class QueueSystem {
         public void moveToWindow(String state, String window, String date, PriorityQueue<QueueRequest> from, PriorityQueue<QueueRequest> to) {
 
             QueueRequest pos = from.poll();
+            updateInfo(pos, state, window, date, genPriority(PQtoList(to)));
             to.add(pos);
-            updateInfo(pos, state, window, date);
             writeChange(pos);
             
         }
@@ -209,8 +210,8 @@ public class QueueSystem {
         public void moveToWindow(String state, String window, String date, PriorityQueue<QueueRequest> from, LinkedList<QueueRequest> to) {
 
             QueueRequest pos = from.poll();
+            updateInfo(pos, state, window, date, genPriority(to));
             to.add(pos);
-            updateInfo(pos, state, window, date);
             writeChange(pos);
 
         }
@@ -220,7 +221,7 @@ public class QueueSystem {
             QueueRequest pos = from.remove(index);
             
             to.add(pos);
-            updateInfo(pos, state, window, date);
+            updateInfo(pos, state, window, date, genPriority(PQtoList(to)));
             writeChange(pos);
 
         }
@@ -230,7 +231,7 @@ public class QueueSystem {
         public void dequeue(String state, String window, String date, LinkedList<QueueRequest> queue, int index) {
 
             QueueRequest pos = queue.remove(index);
-            updateInfo(pos, state, window, date);
+            updateInfo(pos, state, window, date, "0");
             writeChange(pos);
 
         }
@@ -238,7 +239,7 @@ public class QueueSystem {
         public void dequeue(String state, String window, String date, PriorityQueue<QueueRequest> queue) {
 
             QueueRequest pos = queue.poll();
-            updateInfo(pos, state, window, date);
+            updateInfo(pos, state, window, date, "0");
             writeChange(pos);
 
         }
@@ -388,7 +389,7 @@ public class QueueSystem {
                         
                         if (days >= daysElapsedExpire) {
                         queue.remove(request);
-                        updateInfo(request, "EXPIRED", request.getWindow(), now);
+                        updateInfo(request, "EXPIRED", request.getWindow(), now, "0");
                         writeChange(request);
                         }
 
@@ -466,7 +467,7 @@ public class QueueSystem {
             return i;
         }
 
-        // TODO: backwards display para latest una
+        // TODO: backwards display para latest una NEED FIX, and skip first
         public static class ViewHistory {
 
             // TODO: history chage to medyo 
