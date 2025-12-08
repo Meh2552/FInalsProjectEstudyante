@@ -33,41 +33,81 @@ public class HelpdeskManager extends DocuHandler
         }
 
         // priority based on arrival time
-        Collections.sort(list, new Comparator<HelpdeskTicket>() 
-        {
+        Collections.sort(list, new Comparator<HelpdeskTicket>() {
             @Override
-            public int compare(HelpdeskTicket a, HelpdeskTicket b) 
+            public int compare(HelpdeskTicket a, HelpdeskTicket b)
             {
-                
-                String sA = a.getStatus();
-                String sB = b.getStatus();
+                // Normalize status ordering
+                int orderA = statusRank(a.getStatus());
+                int orderB = statusRank(b.getStatus());
+                if (orderA != orderB) return Integer.compare(orderA, orderB);
 
-                // pending first
-                if (sA.equals("Pending") && !sB.equals("Pending"))
-                    return -1;
-
-                if (!sA.equals("Pending") && sB.equals("Pending"))
-                    return 1;
-
-                // if same status prioritize by arrival time
                 return a.getDate().compareTo(b.getDate());
+            }
+
+            private int statusRank(String s)
+            {
+                if (s == null) 
+                {
+                	return 4;
+                }
+                
+                if (s.equalsIgnoreCase("Pending")) 
+                {
+                	return 1;
+                }
+                if (s.startsWith("Endorsed")) 
+                {
+                	return 2;
+                }
+                
+                if (s.equalsIgnoreCase("Answered")) 
+                {
+                	return 3;
+                }
+                
+                if (s.equalsIgnoreCase("Closed")) 
+                {
+                	return 5;
+                }
+                
+                return 4;
             }
         });
 
         return list;
     }
 
-
-    public void saveTickets(List<HelpdeskTicket> tickets) 
+    public void saveTickets(List<HelpdeskTicket> tickets)
     {
-        ArrayList<String> out = new ArrayList<String>();
-        
+        ArrayList<String> out = new ArrayList<>();
         for (HelpdeskTicket t : tickets)
         {
-        	out.add(t.toFileLine());
+            out.add(t.toFileLine());
         }
-        
         write(out);
     }
-}
 
+    public boolean endorseTicket(int ticketId, String window)
+    {
+        List<HelpdeskTicket> tickets = loadTickets();
+        boolean found = false;
+        for (HelpdeskTicket t : tickets)
+        {
+            if (t.getId() == ticketId)
+            {
+                t.setAssignedWindow(window);
+                t.setStatus("Endorsed -> " + window);
+                found = true;
+                break;
+            }
+        }
+        
+        if (found) 
+        {
+        	saveTickets(tickets);
+        	
+        }
+        return found;
+    }
+}

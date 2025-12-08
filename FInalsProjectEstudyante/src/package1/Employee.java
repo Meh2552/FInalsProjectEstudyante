@@ -25,84 +25,97 @@ public abstract class Employee extends User
         employeeMenu();
     }
     
-    public void respondToTicket() 
+    public void respondToTicket()
     {
-
         List<HelpdeskTicket> tickets = system.helpdeskManager().loadTickets();
-        
-        if (tickets.size() == 0) 
+        if (tickets.size() == 0)
         {
             System.out.println("No tickets.");
-            
             return;
         }
 
-        while (true) 
+        while (true)
         {
-            System.out.println("=== SELECT TICKET TO RESPOND ===");
-            
-            for (int i = 0; i < tickets.size(); i++) 
+            System.out.println("=== HELPDESK QUEUE ===");
+            for (int i=0;i<tickets.size();i++)
             {
                 HelpdeskTicket t = tickets.get(i);
-                
-                System.out.println("[" + (i+1) + "] ID:" + t.getId() + " (" + t.getStudentNum() + ") " + t.getIssue() + " | Status: " + t.getStatus() + " | " + t.getDate());
+                String assigned = (t.getAssignedWindow() == null || t.getAssignedWindow().isEmpty()) ? "" : " | Assigned: " + t.getAssignedWindow();
+                System.out.println("[" + (i+1) + "] ID:" + t.getId() + " (" + t.getStudentNum() + ") " + t.getIssue() + " | " + t.getDate() + " | Status: " + t.getStatus() + assigned);
             }
 
-            int sel = system.validate().menuChoice("Select ticket: ", tickets.size());            
+            int sel = system.validate().menuChoice("Select ticket: ", tickets.size());
             String action = system.validate().editCancelContinue();
-            
-            if (action.equals("EDIT"))
-            {
-            	continue;
-            }
-            
-            if (action.equals("CANCEL"))
-            {
-            	return;
-            }
+            if (action.equals("EDIT")) continue;
+            if (action.equals("CANCEL")) return;
 
             HelpdeskTicket chosen = tickets.get(sel - 1);
 
+            System.out.println("Selected Ticket ID:" + chosen.getId() + " Issue: " + chosen.getIssue());
             String respMsg = system.validate().requireText("Type your response message: ");
-
             String ts = system.genDate();
-
             String responderName = record.getFullName();
-
             HelpdeskResponse resp = new HelpdeskResponse(chosen.getId(), responderName, respMsg, ts);
             system.helpdeskResponseManager().addResponse(resp);
 
             chosen.setStatus("Answered");
             system.helpdeskManager().saveTickets(tickets);
 
-            System.out.println("Response saved and ticket marked Answered.");
+            System.out.println("=== RESPONSE CONFIRMED ===");
+            System.out.println("You replied at: " + ts);
+            System.out.println("Message: " + respMsg);
+            System.out.println("-".repeat(50));
             return;
         }
     }
 
-    public void viewResponse() {
+    public void viewResponse()
+    {
         String name = record.getFullName();
         List<HelpdeskResponse> list = system.helpdeskResponseManager().loadByResponder(name);
 
-        if (list.size() == 0) {
+        if (list.size() == 0)
+        {
             System.out.println("You have not responded to any tickets yet.");
             return;
         }
 
-        System.out.println("=== YOUR HELP DESK RESPONSE HISTORY ===");
+        while (true)
+        {
+            System.out.println("=== YOUR HELP DESK RESPONSE HISTORY ===");
+            System.out.println("[1] Sort by time (oldest first)");
+            System.out.println("[2] Sort by time (newest first)");
+            System.out.println("[3] Back");
+            int choice = system.validate().menuChoice("Choose: ", 3);
+            
+            if (choice == 3) return;
 
-        for (HelpdeskResponse r : list) {
-            System.out.println("-".repeat(50));
-            System.out.println("Ticket ID: " + r.getTicketId());
-            System.out.println("Date: " + r.getTime());
-            System.out.println("Message:");
-            System.out.println("  " + r.getMessage());
+            if (choice == 1)
+            {
+                Collections.sort(list, (a,b) -> a.getTime().compareTo(b.getTime()));
+            }
+            else
+            {
+                Collections.sort(list, (a,b) -> b.getTime().compareTo(a.getTime()));
+            }
+
+            for (HelpdeskResponse r : list)
+            {
+                System.out.println("-".repeat(50));
+                System.out.println("Ticket ID: " + r.getTicketId());
+                System.out.println("Date: " + r.getTime());
+                System.out.println("Responder: " + r.getRespond());
+                System.out.println("Rating: " + (r.getRating() >= 1 ? r.getRating() : "Unrated"));
+                System.out.println("Message:");
+                System.out.println("  " + r.getMessage());
+            }
         }
     }
 
     public abstract void displayRequest();
 
-    public void requestManager() {
+    public void requestManager() 
+    {
 
         displayRequest();
 

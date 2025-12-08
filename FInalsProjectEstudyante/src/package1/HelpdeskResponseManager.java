@@ -21,39 +21,66 @@ public class HelpdeskResponseManager extends DocuHandler
         append(resp.toFileLine());
     }
 
-    public List<HelpdeskResponse> loadAll() 
+    public List<HelpdeskResponse> loadAll()
     {
         List<String> lines = read();
+        ArrayList<HelpdeskResponse> out = new ArrayList<>();
         
-        ArrayList<HelpdeskResponse> out = new ArrayList<HelpdeskResponse>();
-        
-        for (String l : lines) 
+        for (String l : lines)
         {
             HelpdeskResponse resp = HelpdeskResponse.fromLine(l);
-            
             if (resp != null) out.add(resp);
         }
         
         return out;
     }
-    
-    public List<HelpdeskResponse> loadByResponder(String responderName) 
+
+    public List<HelpdeskResponse> loadByResponder(String responderName)
     {
         List<HelpdeskResponse> all = loadAll();
-        
         ArrayList<HelpdeskResponse> result = new ArrayList<>();
-
-        for (HelpdeskResponse r : all) 
+        
+        for (HelpdeskResponse r : all)
         {
-            if (r.getRespond().equalsIgnoreCase(responderName)) 
-            {
-                result.add(r);
-            }
+            if (r.getRespond().equalsIgnoreCase(responderName)) result.add(r);
         }
 
-        // sort by arrival time
-        Collections.sort(result, (a, b) -> a.getTime().compareTo(b.getTime()));
-
+        Collections.sort(result, (a,b) -> a.getTime().compareTo(b.getTime()));
         return result;
+    }
+
+    public List<HelpdeskResponse> loadByTicket(int ticketId)
+    {
+        List<HelpdeskResponse> all = loadAll();
+        ArrayList<HelpdeskResponse> result = new ArrayList<>();
+        for (HelpdeskResponse r : all)
+        {
+            if (r.getTicketId() == ticketId) result.add(r);
+        }
+        Collections.sort(result, (a,b) -> a.getTime().compareTo(b.getTime()));
+        return result;
+    }
+
+    public boolean updateRating(int ticketId, String responderName, String timestamp, int newRating)
+    {
+        List<HelpdeskResponse> all = loadAll();
+        boolean updated = false;
+        
+        for (HelpdeskResponse r : all)
+        {
+            if (r.getTicketId() == ticketId && r.getRespond().equalsIgnoreCase(responderName) && r.getTime().equals(timestamp))
+            {
+                r.setRating(newRating);
+                updated = true;
+                break;
+            }
+        }
+        if (updated)
+        {
+            ArrayList<String> out = new ArrayList<>();
+            for (HelpdeskResponse r : all) out.add(r.toFileLine());
+            write(out);
+        }
+        return updated;
     }
 }

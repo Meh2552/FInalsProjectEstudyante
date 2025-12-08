@@ -162,59 +162,63 @@ public class Admin extends User
         System.out.println("Employee created.");
     }
     
-    private void respondToTicketAdmin() 
+    public void respondToTicketAdmin()
     {
         List<HelpdeskTicket> tickets = system.helpdeskManager().loadTickets();
-        
-        if (tickets.size() == 0) 
+        if (tickets.size() == 0)
         {
             System.out.println("No tickets.");
-            
             return;
         }
 
-        while (true) 
+        while (true)
         {
-            System.out.println("=== SELECT TICKET TO RESPOND ===");
-            
-            for (int i = 0; i < tickets.size(); i++) 
+            System.out.println("=== SELECT TICKET TO RESPOND / ENDORSE ===");
+            for (int i=0;i<tickets.size();i++)
             {
                 HelpdeskTicket t = tickets.get(i);
-                
-                System.out.println("[" + (i+1) + "] ID:" + t.getId() + " (" + t.getStudentNum() + ") " + t.getIssue() + " | Status: " + t.getStatus());
+                String assigned = (t.getAssignedWindow()==null || t.getAssignedWindow().isEmpty()) ? "" : " | Assigned: " + t.getAssignedWindow();
+                System.out.println("[" + (i+1) + "] ID:" + t.getId() + " (" + t.getStudentNum() + ") " + t.getIssue() + " | Status: " + t.getStatus() + assigned);
             }
 
             int sel = system.validate().menuChoice("Select ticket: ", tickets.size());
-            
-            String action = system.validate().editCancelContinue();
-            
-            if (action.equals("EDIT")) 
-            {
-            	continue;
-            }
-            
-            if (action.equals("CANCEL"))
-            {
-            	return;
-            }
+            String action = system.validate().requireText("Type [R]eply, [E]ndorse to window, [C]ancel: ");
+
+            if (action.equalsIgnoreCase("C")) return;
 
             HelpdeskTicket chosen = tickets.get(sel - 1);
-            
-            String respMsg = system.validate().requireText("Type your response message: ");
-            
-            String ts = system.genDate();
-            
-            String responderName = record.getFullName();
 
-            HelpdeskResponse resp = new HelpdeskResponse(chosen.getId(), responderName, respMsg, ts);
-            system.helpdeskResponseManager().addResponse(resp);
-
-            chosen.setStatus("Answered");
-            system.helpdeskManager().saveTickets(tickets);
-
-            System.out.println("Response saved and ticket marked Answered.");
-            
-            return;
+            if (action.equalsIgnoreCase("E"))
+            {
+                System.out.println("[1] Cashier [2] Accounting [3] Registrar [4] Cancel");
+                int w = system.validate().menuChoice("Choose window: ", 4);
+                if (w == 4) continue;
+                String window = (w==1) ? "CASHIER" : (w==2) ? "ACCOUNTING" : "REGISTRAR";
+                boolean ok = system.helpdeskManager().endorseTicket(chosen.getId(), window);
+                if (ok) {
+                    System.out.println("Ticket endorsed to " + window + " successfully.");
+                } else {
+                    System.out.println("Failed to endorse ticket.");
+                }
+                return;
+            }
+            else if (action.equalsIgnoreCase("R"))
+            {
+                String respMsg = system.validate().requireText("Type your response message: ");
+                String ts = system.genDate();
+                String responderName = record.getFullName();
+                HelpdeskResponse resp = new HelpdeskResponse(chosen.getId(), responderName, respMsg, ts);
+                system.helpdeskResponseManager().addResponse(resp);
+                chosen.setStatus("Answered");
+                system.helpdeskManager().saveTickets(tickets);
+                System.out.println("Response saved and ticket marked Answered.");
+                return;
+            }
+            else
+            {
+                System.out.println("Invalid option.");
+                continue;
+            }
         }
     }
 
@@ -240,11 +244,17 @@ public class Admin extends User
 
     private void deleteUser() 
     {
-        String user = system.validate().requireText("Username to delete: ");
+        String username = system.validate().requireText("Username to delete: ");
         
-        um.deleteUser(user);
-        
-        System.out.println("Deleted.");
+        if (um.usernameExists(username)) 
+        {
+            um.deleteUser(username);
+            System.out.println("Deleted.");
+        }
+        else 
+        {
+            System.out.println("User does not exist.");
+        }
     }
 
     public class AdminHistory {
