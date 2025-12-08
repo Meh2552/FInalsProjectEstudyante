@@ -130,11 +130,9 @@ public class UserManager extends DocuHandler
                     if (first) {
                         first = false;
                         text = newUsername;
-                        output = output.concat(text);
-                        continue;
                     }
 
-                    output = output.concat("," + text);
+                    output = output.concat(text);
                 }
 
                 out.add(output);
@@ -161,9 +159,9 @@ public class UserManager extends DocuHandler
                 // Rewrites line
                 for (String text : part) {
                     count++;
-
-                    if (count != 1) output = output.concat(",");
-                    if (count == 2) text = newPassword;
+                    if (count == 2) {
+                        text = newPassword;
+                    }
 
                     output = output.concat(text);
                 }

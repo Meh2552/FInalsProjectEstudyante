@@ -273,6 +273,7 @@ public class Cashier extends Employee
         Reciept r = new Reciept();
 
         List<String> list = r.read();
+        System.out.println(list);
         int i = (list.size() + 9) / 10;
         int current = 1;
 
@@ -345,6 +346,7 @@ public class Cashier extends Employee
 
                     String parts[] = line.split(",");
 
+                    System.out.println(items);
                     QueueRequest request = QueueRequest.fromLine(line);
                     Reciept r = new Reciept(request, parts[7]);
                 }

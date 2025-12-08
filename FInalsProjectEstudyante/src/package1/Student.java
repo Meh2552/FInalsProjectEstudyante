@@ -397,9 +397,7 @@ public class Student extends User
             return;
         }
 
-        System.out.println("Username succesfully changed");
         system.userManager().changeUser(record.getUsername(), user);
-        return;
 
         }
     }
@@ -418,7 +416,7 @@ public class Student extends User
             }
 
             // Confirms if password and confirmed password is the same
-            if (!pass.equals(conPass)) {
+            if (pass.equals(conPass)) {
                 System.out.println("Incorrect password, type your password again to confirm");
                 continue;
             }
@@ -427,10 +425,7 @@ public class Student extends User
 
             if (confirm) system.userManager().changePass(record.getUsername(), pass);
             else continue;
-
-            System.out.println("Password succesfully changed");
-            return;
-
+            break;
         }
     }
 
