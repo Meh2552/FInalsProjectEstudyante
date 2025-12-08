@@ -1,7 +1,7 @@
 package package1;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.*;
+import java.time.format.*;
 import java.util.*;
 
 // TODO: kailangan ensure yung new files, idk how 2 tho
@@ -87,5 +87,15 @@ public class MainSystem
 		return formDate;
 	        
 	}
+
+	public String genDate(int days) {
+
+        LocalDate date = LocalDate.now();
+		date = date.plusDays(days);
+		DateTimeFormatter form = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+        return form.format(date);
+
+    }
 
 }

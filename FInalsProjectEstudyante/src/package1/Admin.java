@@ -6,10 +6,12 @@ public class Admin extends User
 {
 
     private UserManager um;
+    private QueueSystem qs;
 
     public Admin(MainSystem system, UserRecord record) {
         super(system, record);
         this.um = system.userManager();
+        this.qs = system.queueSystem();
     }
 
     @Override
@@ -280,19 +282,19 @@ public class Admin extends User
                 ArrayList<String> historyTag = new ArrayList<>();
                 historyTag.add("CASHIER");
                 historyTag.add("PAUSED");
-                history(1, historyTag);
+                history(1, historyTag, true);
                 break;
 
                 case 2:
                 ArrayList<String> historyTag2 = new ArrayList<>();
                 historyTag2.add("ACCOUNTING");
-                history(1, historyTag2);
+                history(1, historyTag2, false);
                 break;
 
                 case 3:
                 ArrayList<String> historyTag3 = new ArrayList<>();
                 historyTag3.add("REGISTRAR");
-                history(1, historyTag3);
+                history(1, historyTag3, false);
                 break;
 
                 case 4:
@@ -308,9 +310,10 @@ public class Admin extends User
 
         }
 
-        public void history(int page, List<String> statements) {
+        public void history(int page, List<String> statements, boolean showPrice) {
 
-            QueueSystem qs = new QueueSystem(1, statements);
+            QueueSystem.HistoryManager hm = qs.new HistoryManager();
+            hm.displayViewHistory(1, statements, showPrice);
             int current = 1;
 
             while (true) {
@@ -326,7 +329,7 @@ public class Admin extends User
                     return;
                 }
 
-                qs = new QueueSystem(input, statements);
+                hm.displayViewHistory(input, statements, showPrice);
                 current = input;
 
             }
@@ -334,7 +337,8 @@ public class Admin extends User
         }
 
         private void historyDis() {
-            QueueSystem qs = new QueueSystem(1);
+            QueueSystem.HistoryManager hm = qs.new HistoryManager();
+            hm.displayViewHistory(1, true);
             int current = 1;
 
             while (true) {
@@ -348,7 +352,7 @@ public class Admin extends User
                     return;
                 }
 
-                qs = new QueueSystem(input);
+                hm.displayViewHistory(input, true);
                 current = input;
 
             }

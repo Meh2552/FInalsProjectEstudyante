@@ -25,9 +25,10 @@ public class Cashier extends Employee
     {
         while (true)
         {
+            qm.expire(system.genDate());
             System.out.println("\n=== CASHIER MENU ===");
             System.out.println("[1] View Request Status");
-            System.out.println("[2] Create Request"); //TODO: eto
+            System.out.println("[2] Create Request");
             System.out.println("[3] Manage Requests");
             System.out.println("[4] Respond to Helpdesk");
             System.out.println("[5] View Helpdesk Responses");
@@ -67,7 +68,7 @@ public class Cashier extends Employee
                 historyTag.add("CASHIER");
                 historyTag.add("PAUSED");
                 historyTag.add("Paid");
-                history(1, historyTag);
+                history(1, historyTag, true);
             }
             
             else if (choice == 7)
@@ -116,7 +117,7 @@ public class Cashier extends Employee
 
             super.requestManager();
             
-            String select = system.validate().requireText("X - Go Back, G - Go to payment, P - Pause, U - Unpause request, V - View Request List, C - Cancel");
+            String select = system.validate().requireText("X - Go Back, G - Go to payment, P - Pause, U - Unpause request, E - Change Expiry V - View Request List, C - Cancel");
 
             switch(select) {
 
@@ -140,6 +141,11 @@ public class Cashier extends Employee
                 // Unpause
                 case "U": case "u":
                 unpause();
+                break;
+
+                // Change Expiry
+                case "E": case "e":
+                changeExpiry(cashierQ.peek());
                 break;
 
                 // View Request
@@ -186,19 +192,9 @@ public class Cashier extends Employee
             Cashier.Reciept rc = new Reciept(cur);
 
             double payment = 0;
-            String input = "";
             while (true) {
-                input = system.validate().requireText("Input payment ('x' to go back)");
-                if (input.matches("[xX]")) return;
-
-                try {
-                    payment = Double.parseDouble(input);
-                } 
-                
-                catch (Exception e) {
-                    System.out.println("Invalid input. Try again.");
-                    continue;
-                }
+                payment = system.validate().requireDouble("Input payment ('x' to go back)");
+                if (payment == -7) return;
 
                 if (Double.parseDouble(cur.getPrice()) > payment) {
                     System.out.println("Insufficient Payment");
@@ -209,13 +205,13 @@ public class Cashier extends Employee
                 break;
             }
 
-            if (index == 0) qm.moveToWindow("Paid", "ACCOUNTING", system.genDate(), cashierQ, QueueSystem.getAccountQ());
-            else  qm.moveToWindow("Paid", "ACCOUNTING", system.genDate(), pauseQ, QueueSystem.getAccountQ(), index - 1);
+            if (index == 0) qm.moveToWindow("Paid", "ACCOUNTING", system.genDate(), cashierQ, QueueSystem.getAccountQ(), system.genDate(1));
+            else  qm.moveToWindow("Paid", "ACCOUNTING", system.genDate(), pauseQ, QueueSystem.getAccountQ(), index - 1, system.genDate(1));
             
             System.out.println("Successfully paid, pending approval.");
             Cashier.Reciept rec = new Reciept(cur, String.valueOf(payment));
-            rec.appendReci(cur, input);
-            if (system.validate().confirm("Exit? ")) return;
+            rec.appendReci(cur, String.valueOf(payment));
+            if (!system.validate().confirm("Load next? ")) return;
             index = 0;
         }
     }

@@ -121,9 +121,10 @@ public abstract class Employee extends User
 
     }
 
-    public void history(int page, List<String> statements) {
+    public void history(int page, List<String> statements, boolean showPrice) {
 
-        QueueSystem qs = new QueueSystem(1, statements);
+        QueueSystem.HistoryManager hm = qs.new HistoryManager();
+        hm.displayViewHistory(1, statements, showPrice);
         int current = 1;
 
         while (true) {
@@ -137,202 +138,316 @@ public abstract class Employee extends User
                 return;
             }
 
-            qs = new QueueSystem(input, statements);
+            hm.displayViewHistory(input, statements, showPrice);
             current = input;
 
         }
 
     }
 
+    public int requireExpiry() {
+        while (true) {
+            int expiry = system.validate().requireInt("Days until expiry: (x to go back)");
+            if (expiry == -7) return -7;
+
+            else if (expiry < 1) {
+                System.out.println("Input must be at least 1");
+                continue;
+            }
+
+            return expiry;
+        }
+
+    }
+
     public void createRequest() {
-        String user, stNum = "", doc = "";
+        String user = "", stNum = "", doc = "", state = "";
+        double price = 0;
+        int expiry = 0;
+        UserRecord userRec;
 
-        while (true) {
+        int step = 1;
+        int window = 0;
+        System.out.println("=== Create Request ===");
 
-            System.out.println("=== Create Request ===");
-            user = system.validate().requireText("Username, Type 'D' to label as walk-in (Type 'x' to go back) : "); //TODO: ask this idk 
+        while (step <= 7) {
 
-            if (user.matches("[xX]")) return;
-            else if (user.matches("[dD]")) user = "Walk-in";
+            switch (step) {
 
-            // Confirms if username is already in the system
-            else if (!system.userManager().usernameExists(user)) { //TODO: if stnum already exists, st num input is skipped
-                System.out.println("Username does not exist.");
-                continue;
-            }
-
-            while (true) {
-            stNum = createStNum(stNum);
-            if (stNum.matches("[xX]")) break;
-
-            doc = system.validate().requireText("Type of document (Type 'x' to go back) : ");
-            if (stNum.matches("[xX]")) continue;
-            break;
-            }
-
-            switch (createWindow(user, stNum, doc)) {
-
-            case 1: case -2:
-            return;
-
-            case -1: case 0:
-            continue;
-
-            }
-
-        }
-
-    }
-
-    private String createStNum(String stNum) {
-        while (true) {
-
-            stNum = system.validate().requireText("Student Number (Type 'x' to go back) : ");
-            if (stNum.matches("[xX]")) return "X"; 
-
-            // Confirms if stNum is in system
-            else if (!system.userManager().studentNumExists(stNum)) {
-                System.out.println("Invalid Student Number");
-                continue;
-            }
-
-            return stNum;
-
-        }
-    }
-
-    private int createWindow(String user, String stNum, String doc) {
-        String state = "", price = "";
-        double priceD = 0;
-        while (true) {
-
-            System.out.println("----  Send to Window  ----");
-            System.out.println("[1] Cashier");
-            System.out.println("[2] Accounting");
-            System.out.println("[3] Registrar");
-            System.out.println("[X] Back");
-
-            int input = system.validate().minMaxXChoice("Choose which window", 1, 3);
-
-            switch(input) {
-
-                // Cashier
+                // User step
                 case 1:
-                while (true) {
-                state = system.validate().requireText("State (Type 'x' to go back) :");
-                if (state.matches("[xX]")) break;
+                user = system.validate().requireText("Username, Type 'D' to label as walk-in (Type 'x' to go back) : "); 
 
-                price = system.validate().requireText("Input payment (X to go back)");
-                if (price.matches("[Xx]")) continue;
-                
-                try {
-                priceD = Double.parseDouble(price);
-                } 
-                
-                catch (Exception e) {
-                System.out.println("Invalid input. Try again.");
-                continue;
+                if (user.matches("[xX]")) return;
+                else if (user.matches("[dD]")) {
+                    user = "Walk-in";
+                    step = 0;
+                    break;
                 }
+
+                // Confirms if username is already in the system
+                else if (system.userManager().usernameExists(user)) {  
+                    userRec = loadRecord(user);
+                    if (userRec == null) {
+                        System.out.println("Invalid Username");
+                        break;
+                    }
+
+                    step++;
+                    stNum = userRec.getStudentNum();
+                    System.out.println("Associated student number found: " + stNum);
+                    break;
+                }
+                
+                System.out.println("Username does not exist");
                 break;
+
+
+                // Student Number (0 because optional if the username is already found)
+                case 0:
+                stNum = system.validate().requireText("Student Number (Type 'x' to go back) : ");
+
+                if (stNum.matches("[xX]")) {
+                    step = 1;
+                    break;
+                }
+
+                else if (stNum.matches("[0-9]{11}")) {
+                    stNum = String.format("%s-%s", stNum.substring(0,5), stNum.substring(5));
+                }
+
+                // Confirms if stNum is in system
+                if (system.userManager().studentNumExists(stNum)) {
+                    step = 2;
+                    break;
+                }
+
+                System.out.println("Invalid Student Number");
+                break;
+
+
+                // Document
+                case 2:
+                doc = system.validate().requireText("Type of document (Type 'x' to go back) : ");
+
+                if (doc.matches("[xX]")) {
+                    step = 1;
+                    break;
+                }
+
+                step++;
+                break;
+
+
+                // Window
+                case 3:
+                window = createWinSelect();
+
+                if (window != -1) step++;
+                else step--;
+        
+                break;
+
+
+                // State
+                case 4:
+                state = system.validate().requireText("Enter request state (X to go back)");
+                if (state.matches("[Xx]")) return;
+                step++;
+                break;
+
+
+                // Price
+                case 5:
+                if (window == 1) {
+                    price = system.validate().requireDouble("Input payment (X to go back)");
+                    if (price == -7) {
+                        step--;
+                        continue;
+                    }
+
+                    else if (price <= 0) {
+                        System.out.println("Invalid price");
+                    }
+                }
+
+                step++;
+                break;
+
+
+                // Expire
+                case 6:
+                expiry = requireExpiry();
+                if (expiry == -7) {
+                    step--;
+                    continue;
+                }
+
+                step++;
+                break;
+
+
+                // Confirm created
+                case 7:
+                int result = -2;
+                
+                if (window == 1) {
+                    result = createConfirm(doc, state, String.valueOf(price), "Cashier", user, stNum, expiry);
+                }
+                else if (window == 2) {
+                    result = createConfirm(doc, state, "N/A", "Accounting", user, stNum, expiry);
+                }
+                else if (window == 3) {
+                    result = createConfirm(doc, state, "N/A", "Registrar", user, stNum, expiry);
                 }
                 
-                int result1 = createConfirm(doc , state, price, "Cashier", user, stNum);
-                if (result1 == -2) return -2;
-                else if (result1 == 0) return 0;
+                if (result == 0) {
+                    System.out.println("Create request cancelled");
+                    return;
+                }
+                else if (result == -1) {
+                    step--;
+                    break;
+                }
 
-                createAdd(qs.getCashierQ(), user, stNum, doc, state, price, "CASHIER");
-                System.out.println("Request Sucessfully created in cashier");
-                return 1;
-
-
-                // Accounting
-                case 2:
-                state = system.validate().requireText("State (Type 'x' to go back) :");
-                if (state.matches("[xX]")) continue;
-                
-                int result = createConfirm(doc , state, "N/A", "Accounting", user, stNum);
-                if (result == -2) return -2;
-                else if (result == 0) return 0;
-
-                createAdd(qs.getAccountQ(), user, stNum, doc, state, "0", "ACCOUNTING");
-                System.out.println("Request Sucessfully created in accounting");
-                return 1;
-
-
-                // Registrar
-                case 3:
-                state = system.validate().requireText("State (Type 'x' to go back) :");
-                if (state.matches("[xX]")) continue;
-                
-                int result2 = createConfirm(doc , state, "N/A", "Registrar", user, stNum);
-                if (result2 == -2) return -2;
-                else if (result2 == 0) return 0;
-
-                createAdd(qs.getRegistarQ(), user, stNum, doc, state, "0", "REGISTRAR");
-                System.out.println("Request Sucessfully created in registrar");
-                return 1;
-
-                // Back
-                case -1:
-                return -1;
-
+                step++;
+                break;
             }
 
         }
+
+        switch (window) {
+
+            // Cashier
+            case 1:
+            createAdd(qs.getCashierQ(), user, stNum, doc, state, String.valueOf(price), "CASHIER", system.genDate(expiry));
+            System.out.println("Request sucessfully created in cashier");
+            break;
+
+            // Accounting
+            case 2:
+            createAdd(qs.getAccountQ(), user, stNum, doc, state, "0", "ACCOUNTING", system.genDate(expiry));
+            System.out.println("Request sucessfully created in accounting");
+            break;
+
+            // Registrar
+            case 3:
+            createAdd(qs.getRegistarQ(), user, stNum, doc, state, "0", "REGISTRAR", system.genDate(expiry));
+            System.out.println("Request sucessfully created in registrar");
+            break;
+        }
+
     }
 
-    private int createConfirm(String doc, String state, String price, String window, String user, String stNum) {
-            System.out.println("----  Confirm Create Request----");
-            System.out.println("Student: " + stNum + "     Username: " + user);
-            System.out.println("Requesting: " + doc + "     State: " + state);
-            System.out.println("Price " + price);
-            System.out.println("Send to window: " + window);
+    private int createWinSelect() {
+        System.out.println("----  Send to Window  ----");
+        System.out.println("[1] Cashier");
+        System.out.println("[2] Accounting");
+        System.out.println("[3] Registrar");
+        System.out.println("[X] Back");
+
+        int input = system.validate().minMaxXChoice("Choose which window", 1, 3);
+        return input;
+    }
+
+    private int createConfirm(String doc, String state, String price, String window, String user, String stNum, int expiry) {
+        System.out.println("----  Confirm Create Request----");
+        System.out.println("Student: " + stNum + "     Username: " + user);
+        System.out.println("Requesting: " + doc + "     State: " + state);
+        System.out.println("Price " + price);
+        System.out.println("Send to window: " + window);
+        System.out.println("Will expire in " + expiry + " day/s");
+
+        switch (system.validate().editCancelContinue()) {
+
+            case "EDIT" -> {
+            return -1;
+            }
+
+            case "CANCEL" -> {
+            return 0;
+            }
+
+            case "CONTINUE" -> {
+                
+            }
+        }
+        return 1;
+    }
+
+    private void createAdd(LinkedList<QueueRequest> queue, String user, String stNum, String doc, String state, String price, String window, String expiry) {
+
+        String id = dm.genId();
+        String date = system.genDate();
+
+        DocumentRequest request = new DocumentRequest(user, stNum, doc, state, system.genDate(), id);
+        dm.addRequest(request);
+
+        QueueRequest qr = new QueueRequest(id, stNum, doc, state, window, date, price, qm.genPriority(queue), expiry);
+        queue.add(qr);
+
+        qm.writeQ();
+        qs.getHistoryManager().appendHist(qr, price);
+    }
+
+    private void createAdd(PriorityQueue<QueueRequest> queue, String user, String stNum, String doc, String state, String price, String window, String expiry) {
+
+        String id = dm.genId();
+        String date = system.genDate();
+
+        DocumentRequest request = new DocumentRequest(user, stNum, doc, state, system.genDate(), id);
+        dm.addRequest(request);
+
+        QueueRequest qr = new QueueRequest(id, stNum, doc, state, window, date, price, qm.genPriority(qs.PQtoList(queue)), expiry);
+        queue.add(qr);
+
+        qm.writeQ();
+        qs.getHistoryManager().appendHist(qr, price);
+    }
+
+    private UserRecord loadRecord(String username) {
+
+        String line = system.userManager().readUserLine(username);
+        String parts[] = line.split(",");
+        if (!parts[2].equals("STUDENT")) return null;
+        UserRecord rec = new UserRecord(parts[0], parts[1], parts[3], parts[4]);
+        return rec;
+
+    }
+
+    public void changeExpiry(QueueRequest request) {
+        while (true) {
+
+            int days = requireExpiry();
+            if (days == -7) {
+                return;
+            }
+
+            String date = system.genDate(days);
+
+            System.out.println("----  Confirm Changes ----");
+            System.out.println("Former Expiry: " + request.getExpiry());
+            System.out.println("New Expiry " + date);
 
             switch (system.validate().editCancelContinue()) {
 
                 case "EDIT" -> {
-                return 0;
+                    continue;
                 }
 
                 case "CANCEL" -> {
-                return -2;
+                    return;
                 }
 
                 case "CONTINUE" -> {
-                
                 }
             }
-            return 1;
+
+            request.setExpiry(date);
+            qm.writeQ();
+            System.out.println("Request expiration date changed");
+            return;
+
+        }
     }
-
-    private void createAdd(LinkedList<QueueRequest> queue, String user, String stNum, String doc, String state, String price, String window) {
-
-        String id = dm.genId();
-        String date = system.genDate();
-
-        DocumentRequest request = new DocumentRequest(user, stNum, doc, state, system.genDate(), id);
-        dm.addRequest(request);
-
-        QueueRequest qr = new QueueRequest(id, stNum, doc, state, window, date, price, qm.genPriority(queue));
-        queue.add(qr);
-
-        qm.writeQ();
-        qs.getHistoryManager().appendHist(qr, price);
-    }
-
-    private void createAdd(PriorityQueue<QueueRequest> queue, String user, String stNum, String doc, String state, String price, String window) {
-
-        String id = dm.genId();
-        String date = system.genDate();
-
-        DocumentRequest request = new DocumentRequest(user, stNum, doc, state, system.genDate(), id);
-        dm.addRequest(request);
-
-        QueueRequest qr = new QueueRequest(id, stNum, doc, state, window, date, price, qm.genPriority(qs.PQtoList(queue)));
-        queue.add(qr);
-
-        qm.writeQ();
-        qs.getHistoryManager().appendHist(qr, price);
-    }
-
 }

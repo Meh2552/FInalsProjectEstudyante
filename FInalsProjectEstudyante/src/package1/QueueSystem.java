@@ -1,7 +1,6 @@
 package package1;
 
 import java.time.*;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 public class QueueSystem {
@@ -36,26 +35,11 @@ public class QueueSystem {
 
     }
 
-    public QueueSystem(String id, String price) {
+    public QueueSystem(String id, String price, String date) {
         this();
 
-        this.queueMan.enqueueNew(id, price);
+        this.queueMan.enqueueNew(id, price, date);
     }
-
-    public QueueSystem(int page, List<String> statements) {
-        this();
-
-        List<String> list = getHistoryManager().read();
-        HistoryManager.ViewHistory vh = new HistoryManager.ViewHistory(list, page, statements);
-    }
-
-    public QueueSystem(int page) {
-        this();
-
-        List<String> list = getHistoryManager().read();
-        HistoryManager.ViewHistory vh = new HistoryManager.ViewHistory(list, page);
-    }
-
 
     private static PriorityQueue<QueueRequest> casQ = new PriorityQueue<>(( a, b ) -> Integer.parseInt(a.getPriority()) - Integer.parseInt(b.getPriority()));
     private static LinkedList<QueueRequest> pauseQ = new LinkedList<>();
@@ -177,11 +161,12 @@ public class QueueSystem {
         }
 
         // Updates relevant information inside a request
-        private void updateInfo(QueueRequest request, String state, String window, String date, String priority) {
+        private void updateInfo(QueueRequest request, String state, String window, String date, String priority, String expiry) {
             request.setState(state);
             request.setWindow(window);
             request.setDate(date);
             request.setPriority(priority);
+            request.setExpiry(expiry);
         }
 
         // Pauses a request
@@ -190,7 +175,7 @@ public class QueueSystem {
             if (getCashierQ().isEmpty()) return;
 
             QueueRequest pos = getCashierQ().poll();
-            updateInfo(pos, "Paused", "PAUSED", date, genPriority(getPauseQ()));
+            updateInfo(pos, "Paused", "PAUSED", date, genPriority(getPauseQ()), pos.getExpiry());
             getPauseQ().add(pos);
             writeChange(pos);
 
@@ -198,40 +183,40 @@ public class QueueSystem {
 
 
         // Move request to next window/request state 
-        public void moveToWindow(String state, String window, String date, PriorityQueue<QueueRequest> from, PriorityQueue<QueueRequest> to) {
+        public void moveToWindow(String state, String window, String date, PriorityQueue<QueueRequest> from, PriorityQueue<QueueRequest> to, String expiry) {
 
             QueueRequest pos = from.poll();
-            updateInfo(pos, state, window, date, genPriority(PQtoList(to)));
+            updateInfo(pos, state, window, date, genPriority(PQtoList(to)), expiry);
             to.add(pos);
             writeChange(pos);
             
         }
 
-        public void moveToWindow(String state, String window, String date, PriorityQueue<QueueRequest> from, LinkedList<QueueRequest> to) {
+        public void moveToWindow(String state, String window, String date, PriorityQueue<QueueRequest> from, LinkedList<QueueRequest> to, String expiry) {
 
             QueueRequest pos = from.poll();
-            updateInfo(pos, state, window, date, genPriority(to));
+            updateInfo(pos, state, window, date, genPriority(to), expiry);
             to.add(pos);
             writeChange(pos);
 
         }
 
-        public void moveToWindow(String state, String window, String date, LinkedList<QueueRequest> from, PriorityQueue<QueueRequest> to, int index) {
+        public void moveToWindow(String state, String window, String date, LinkedList<QueueRequest> from, PriorityQueue<QueueRequest> to, int index, String expiry) {
 
             QueueRequest pos = from.remove(index);
             
             to.add(pos);
-            updateInfo(pos, state, window, date, genPriority(PQtoList(to)));
+            updateInfo(pos, state, window, date, genPriority(PQtoList(to)), expiry);
             writeChange(pos);
 
         }
 
-        public void moveToWindow(String state, String window, String date, LinkedList<QueueRequest> from, LinkedList<QueueRequest> to, int index) {
+        public void moveToWindow(String state, String window, String date, LinkedList<QueueRequest> from, LinkedList<QueueRequest> to, int index, String expiry) {
 
             QueueRequest pos = from.remove(index);
             
             to.add(pos);
-            updateInfo(pos, state, window, date, genPriority(to));
+            updateInfo(pos, state, window, date, genPriority(to), expiry);
             writeChange(pos);
 
         }
@@ -241,7 +226,7 @@ public class QueueSystem {
         public void dequeue(String state, String window, String date, LinkedList<QueueRequest> queue, int index) {
 
             QueueRequest pos = queue.remove(index);
-            updateInfo(pos, state, window, date, "0");
+            updateInfo(pos, state, window, date, "0", pos.getExpiry());
             writeChange(pos);
 
         }
@@ -249,12 +234,12 @@ public class QueueSystem {
         public void dequeue(String state, String window, String date, PriorityQueue<QueueRequest> queue) {
 
             QueueRequest pos = queue.poll();
-            updateInfo(pos, state, window, date, "0");
+            updateInfo(pos, state, window, date, "0", pos.getExpiry());
             writeChange(pos);
 
         }
 
-        public void enqueueNew(String id, String price) {
+        public void enqueueNew(String id, String price, String expiry) {
 
             List<String> all = getDocumentManager().read();
 
@@ -262,7 +247,7 @@ public class QueueSystem {
                 String[] part = lines.split(",");
 
                 if (part.length > 0 && part[5].equals(id)) {
-                    QueueRequest qr = new QueueRequest(id, part[1], part[2], part[3], "CASHIER", part[4], price, genPriority(PQtoList(casQ)));
+                    QueueRequest qr = new QueueRequest(id, part[1], part[2], part[3], "CASHIER", part[4], price, genPriority(PQtoList(casQ)), expiry);
                     getCashierQ().add(qr);
                     writeQ();
                     getHistoryManager().appendHist(qr, price);
@@ -320,7 +305,7 @@ public class QueueSystem {
 
             public ViewQueue(List<QueueRequest> queue, boolean willDisplayHeader, boolean skipFirst, boolean showPrice, int limit) {
 
-                if (willDisplayHeader) viewDisplay();
+                if (willDisplayHeader) viewDisplay(showPrice);
                 int count = 0;
                 int index = 1;
 
@@ -348,37 +333,41 @@ public class QueueSystem {
                 System.out.printf("   REQUEST: %-10s            %s%n", request.getId(), request.getDate()); 
                 System.out.printf("%n   REQUESTED DOCUMENT: %-15s  %s%n", request.getDocument(), request.getState());
 
-                if (showPrice) 
-                System.out.printf("   Price: %-15s  %n", request.getPrice());
+                if (showPrice) System.out.printf("   Price: %-15s  %n", request.getPrice());
+                System.out.printf("%n  Will expire in: %-15s", request.getExpiry());
             }
 
             // UI
-            public void viewDisplay() {
-                System.out.printf("      %-7s  |  %-12s  |  %-25s  |   %-20s  |  %-7s  |  %s%n", "Request", "Student","Document", "Date & Time", "Price", " Status");
+            public void viewDisplay(boolean showPrice) {
+                
+                if (showPrice) System.out.printf("      %-7s  |  %-12s  |  %-25s  |   %-20s  -   %-15s   |  %-10s  |  %s%n", "Request", "Student","Document", "Last Modified", "Expiry", "Price", " Status");
+                else System.out.printf("      %-7s  |  %-12s  |  %-25s  |   %-20s  -   %-15s   |  %s%n", "Request", "Student","Document", "Last Modified", "Expiry", " Status");
             }
 
 
             public void requestFormat(QueueRequest request, int index) {
 
-                System.out.printf("%4d. %-7s  |  %-12s  |  %-25s  |   %-20s  |  %-7s  |  %s%n",index , request.getId(), request.getStNum(), request.getDocument(), request.getDate(), "", request.getState());
+                System.out.printf("%4d. %-7s  |  %-12s  |  %-25s  |   %-20s  -   %-15s   |  %s%n",index , request.getId(), request.getStNum(), request.getDocument(), request.getDate(), request.getExpiry(), request.getState());
 
             }
 
             public void requestFormat(QueueRequest request, int index, boolean showPrice) {
 
-                System.out.printf("%4d. %-7s  |  %-12s  |  %-25s  |   %-20s  |  %-7s  |  %s%n", index, request.getId(), request.getStNum(), request.getDocument(), request.getDate(), request.getPrice(), request.getState());
+                System.out.printf("%4d. %-7s  |  %-12s  |  %-25s  |   %-20s  -   %-15s   |  %-10s  |  %s%n", index, request.getId(), request.getStNum(), request.getDocument(), request.getDate(), request.getExpiry() , request.getPrice(), request.getState());
 
             }
 
         }
 
         // The expiry date can be changed
-        // TODO: add accounting and registrar and add to system
         public void expire(String now) {
 
             Expire e = new Expire();
-            e.expireP(casQ, now,1);
-            e.expireL(pauseQ, now, 1);
+            e.expireP(casQ, now);
+            e.expireL(pauseQ, now);
+            e.expireP(accQ, now);
+            e.expireL(regQ, now);
+
         }
 
 
@@ -386,47 +375,47 @@ public class QueueSystem {
 
             // Cycles through one of the queues, then, if request date is more than daysToExpire, then it will label the request as expired
             // daysToExpire starts at 1, basically days elapsed, so if current date is 12 and expiry is in 1 day then it expires at the 13th
-            public void expireP(PriorityQueue<QueueRequest> queue, String now, int daysElapsedExpire) {
+            public void expireP(PriorityQueue<QueueRequest> queue, String now) {
                 LocalDate time = LocalDate.now();
+                Iterator<QueueRequest> iterate = queue.iterator();
 
-                for (QueueRequest request : queue) {
-                    String date = request.getDate().substring(1, 10);
-                    String parts[] = date.split("-");
-                    LocalDate reqDate = LocalDate.of(Integer.parseInt(parts[2]), Integer.parseInt(parts[1]), Integer.parseInt(parts[0]));
+                while (iterate.hasNext()) {
+                    QueueRequest request = iterate.next();
 
-                    if (time.isAfter(reqDate)) {
-                        long days = ChronoUnit.DAYS.between(time, reqDate);
-                        
-                        if (days >= daysElapsedExpire) {
-                        queue.remove(request);
-                        updateInfo(request, "EXPIRED", request.getWindow(), now, "0");
-                        writeChange(request);
-                        }
+                    String expParts[] = request.getExpiry().split("-");
+                    LocalDate expDate = LocalDate.of(Integer.parseInt(expParts[2]), Integer.parseInt(expParts[1]), Integer.parseInt(expParts[0]));
+
+                    if (time.isAfter(expDate) || time.isEqual(expDate)) {
+
+                        iterate.remove();
+                        updateInfo(request, "EXPIRED", request.getWindow(), now, "0", request.getExpiry());
+                        getHistoryManager().appendHist(request);
+                        getDocumentManager().changeState(request.getId(), request.getState());
 
                     }
                 }
+                writeQ();
             }
 
-            public void expireL(LinkedList<QueueRequest> queue, String now, int daysElapsedExpire) {
+            public void expireL(LinkedList<QueueRequest> queue, String now) {
                 LocalDate time = LocalDate.now();
-                int count = 0;
 
-                for (QueueRequest request : queue) {
-                    String date = request.getDate().substring(1, 10);
+                Iterator<QueueRequest> iterate = queue.iterator();
 
-                    String parts[] = date.split("-");
-                    LocalDate reqDate = LocalDate.of(Integer.parseInt(parts[2]), Integer.parseInt(parts[1]), Integer.parseInt(parts[0]));
+                while (iterate.hasNext()) {
+                    QueueRequest request = iterate.next();
+                    
+                    String expParts[] = request.getExpiry().split("-");
+                    LocalDate expDate = LocalDate.of(Integer.parseInt(expParts[2]), Integer.parseInt(expParts[1]), Integer.parseInt(expParts[0]));
 
-                    if (time.isAfter(reqDate)) {
-                    long days = ChronoUnit.DAYS.between(time, reqDate);
-
-                    if (days > daysElapsedExpire) {
-                    dequeue("EXPIRED", request.getWindow(), now, queue, count);
+                    if (time.isAfter(expDate) || time.isEqual(expDate)) {
+                        iterate.remove();
+                        updateInfo(request, "EXPIRED", request.getWindow(), now, "0", request.getExpiry());
+                        getHistoryManager().appendHist(request);
+                        getDocumentManager().changeState(request.getId(), request.getState());
                     }
-
-                    }
-                    count++;
                 }
+                writeQ();
             }
 
         }
@@ -477,19 +466,32 @@ public class QueueSystem {
             return i;
         }
 
-        // TODO: backwards display para latest una NEED FIX, and skip first
+        public void displayViewHistory(int page, List<String> statements, boolean showPrice) {
+
+            List<String> list = getHistoryManager().read();
+            Collections.reverse(list);
+            ViewHistory vh = new ViewHistory(list, page, statements, showPrice);
+
+        }
+
+        public void displayViewHistory(int page, boolean showPrice) {
+
+            List<String> list = read();
+            Collections.reverse(list);
+            ViewHistory vh = new ViewHistory(list, page, showPrice);
+        }
+
         public static class ViewHistory {
 
-            // TODO: history chage to medyo 
             // Display all
-            public ViewHistory(List<String> list, int page) {
+            public ViewHistory(List<String> list, int page, boolean showPrice) {
 
                 if (list.isEmpty()) {
                     empty();
                     return;
                 }
 
-                viewDisplay();
+                viewDisplay(showPrice);
                 int pageCount = (list.size() + 24) / 25; // ceiling division idk nahanap ko lang
                 int items = 0;
                 for (String line : list) {
@@ -502,7 +504,7 @@ public class QueueSystem {
                         break;
                     }
 
-                    request(line);
+                    request(line, showPrice);
 
                 }
 
@@ -510,7 +512,7 @@ public class QueueSystem {
             }
 
             // Display some, filters for lines that contain ONE of the statements, not 
-            public ViewHistory(List<String> list, int page, List<String> statements) {
+            public ViewHistory(List<String> list, int page, List<String> statements, boolean showPrice) {
 
                 if (list.isEmpty()) {
                     empty();
@@ -534,7 +536,7 @@ public class QueueSystem {
                     return;
                 }
 
-                viewDisplay();
+                viewDisplay(showPrice);
                 
                 int items = 0;
                 int pageCount = (filtered.size() + 24) / 25;
@@ -550,7 +552,7 @@ public class QueueSystem {
                         break;
                     }
 
-                    request(line);
+                    request(line, showPrice);
 
                 }
 
@@ -558,8 +560,9 @@ public class QueueSystem {
             }
 
             // UI
-            private void viewDisplay() {
-                System.out.printf("  %-13s  |  %-7s  |  %-12s  |  %-15s  |   %-15s  |  %-7s  |  %s%n", "Window", "Request", "Student", "Document", "Date & Time", "Price", " Status");
+            private void viewDisplay(boolean showPrice) {
+                if (showPrice) System.out.printf("  %-15s  |  %-7s  |  %-15s  |  %-25s  |   %-20s  |  %-12s  |  %s%n", "Window", "Request", "Student", "Document", "Date & Time", "Price", " Status");
+                else System.out.printf("  %-15s  |  %-7s  |  %-15s  |  %-25s  |   %-20s  |  %s%n", "Window", "Request", "Student", "Document", "Date & Time", " Status");
             }
 
             private void empty() {
@@ -568,13 +571,16 @@ public class QueueSystem {
                 System.out.println("-----------------------------");
             }
 
-            private void request(String item) {
+            private void request(String item, boolean showPrice) {
                 String parts[] = item.split(",");
 
-                if (parts.length == 7) {
-                    System.out.printf("  %-13s  |  %-7s  |  %-12s  |  %-25s  |   %-20s  |  %-7s  |  %s%n", parts[0], parts[1], parts[2], parts[3], parts[4], parts[6], parts[5]);
-                } else {
-                    System.out.printf("  %-13s  |  %-7s  |  %-12s  |  %-25s  |   %-20s  |  %-7s  |  %s%n", parts[0], parts[1], parts[2], parts[3], parts[4], "", parts[5]);
+                if (showPrice) {
+                    if (parts.length == 7) System.out.printf("  %-15s  |  %-7s  |  %-15s  |  %-25s  |   %-20s  |  %-12s  |  %s%n", parts[0], parts[1], parts[2], parts[3], parts[4], parts[6], parts[5]);
+                    else System.out.printf("  %-15s  |  %-7s  |  %-15s  |  %-25s  |   %-20s  |  %-12s  |  %s%n", parts[0], parts[1], parts[2], parts[3], parts[4], "-", parts[5]);
+                }
+
+                else {
+                    System.out.printf("  %-15s  |  %-7s  |  %-15s  |  %-25s  |   %-20s  |  %s%n", parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]);
                 }
             }
 

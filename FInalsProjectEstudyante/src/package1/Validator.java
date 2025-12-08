@@ -90,14 +90,33 @@ public class Validator
             System.out.print(prompt);
             try 
             {
-                int input = system.scan().nextInt();
-                system.scan().nextLine();
-                return input;
+                String input = system.scan().nextLine();
+                if (input.matches("[Xx]")) return -7; // idk random number lang
+                int out = Integer.parseInt(input);
+                return out;
             } 
-            catch (InputMismatchException e) 
+            catch (NumberFormatException e) 
             {
                 System.out.println("Invalid number. Try again.");
-                system.scan().nextLine();
+            }
+        }
+    }
+
+        public double requireDouble(String prompt) // para sa double types
+    {
+        while (true) 
+        {
+            System.out.print(prompt);
+            try 
+            {
+                String input = system.scan().nextLine();
+                if (input.matches("[Xx]")) return -7; // idk random number lang
+                double out = Double.parseDouble(input);
+                return out;
+            } 
+            catch (NumberFormatException e) 
+            {
+                System.out.println("Invalid number. Try again.");
             }
         }
     }
@@ -111,6 +130,11 @@ public class Validator
             
             if (!input.isEmpty())
             {
+                if (input.contains(",")) {
+                System.out.println("Input cannot contain ','");
+                continue;
+                }
+
             	return input;
             }
             

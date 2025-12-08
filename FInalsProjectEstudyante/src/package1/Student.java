@@ -129,7 +129,7 @@ public class Student extends User
 
         DocumentRequest request = new DocumentRequest(record.getUsername(), record.getStudentNum(), doc, "Pending Payment", system.genDate(), dm.genId());
         dm.addRequest(request);
-        QueueSystem qs = new QueueSystem(request.getId(), price);
+        QueueSystem qs = new QueueSystem(request.getId(), price, system.genDate(1));
         
         System.out.println("Request submitted.");
     }
@@ -397,7 +397,9 @@ public class Student extends User
             return;
         }
 
+        System.out.println("Sucessfully changed username");
         system.userManager().changeUser(record.getUsername(), user);
+        return;
 
         }
     }
@@ -416,7 +418,7 @@ public class Student extends User
             }
 
             // Confirms if password and confirmed password is the same
-            if (pass.equals(conPass)) {
+            if (!pass.equals(conPass)) {
                 System.out.println("Incorrect password, type your password again to confirm");
                 continue;
             }
@@ -425,7 +427,8 @@ public class Student extends User
 
             if (confirm) system.userManager().changePass(record.getUsername(), pass);
             else continue;
-            break;
+            System.out.println("Sucessfully changed password");
+            return;
         }
     }
 

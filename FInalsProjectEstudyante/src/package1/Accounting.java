@@ -22,6 +22,7 @@ public class Accounting extends Employee
     {
         while (true) 
         {
+            qm.expire(system.genDate());
             System.out.println("\n=== ACCOUNTING MENU ===");
             System.out.println("[1] View All Requests");
             System.out.println("[2] Create Request");
@@ -64,7 +65,7 @@ public class Accounting extends Employee
                 ArrayList<String> historyTag = new ArrayList<>();
                 historyTag.add("ACCOUNTING");
                 historyTag.add("Approved");
-                history(1, historyTag);
+                history(1, historyTag, false);
             }
 
             else if (choice == 7) {
@@ -115,14 +116,14 @@ public class Accounting extends Employee
 
             super.requestManager();
 
-            String select = system.validate().requireText("X - Go Back, A - Accept, D - Deny, S - Send to Window, C - Cancel, V - View Requests");
+            String select = system.validate().requireText("X - Go Back, A - Accept, D - Deny, S - Send to Window, E - Change Expiry, C - Cancel, V - View Requests");
 
             switch(select) {
 
                 // Accept
                 case "A": case "a":
                 if (!system.validate().confirm("Are you sure you want to accept Request: " + accQ.peek().getId())) break;
-                qm.moveToWindow("Approved", "REGISTRAR", system.genDate(), accQ, qs.getRegistarQ());
+                qm.moveToWindow("Approved", "REGISTRAR", system.genDate(), accQ, qs.getRegistarQ(), system.genDate(7));
                 System.out.println("Current request accepted");
                 break;
 
@@ -136,6 +137,11 @@ public class Accounting extends Employee
                 // Send to Window
                 case "S": case "s":
                 sendToWindow();
+                break;
+
+                // Change Expiry
+                case "E": case "e":
+                changeExpiry(accQ.peek());
                 break;
 
                 // Cancel
@@ -200,34 +206,58 @@ public class Accounting extends Employee
     private void cashierSendTo(QueueRequest request) {
 
         System.out.println("- Cashier Selected \n");
-        String price, state;
-        double priceD = 0;
+        String state = "";
+        double price = 0;
+        int expiry = 0;
 
-        while (true) {
+        int step = 1;
+        while (step <= 3) {
 
-            state = system.validate().requireText("Enter request state (X to go back)");
-            if (state.matches("[Xx]")) return;
+            switch (step) {
 
-            price = system.validate().requireText("Input payment (X to go back)");
-            if (price.matches("[Xx]")) continue;
+                // State
+                case 1:
+                state = system.validate().requireText("Enter request state (X to go back)");
+                if (state.matches("[Xx]")) return;
+                step++;
+                continue;
+
+                // Price
+                case 2:
+                price = system.validate().requireDouble("Input payment (X to go back)");
+                if (price == -7) {
+                    step--;
+                    continue;
+                }
+
+                else if (price <= 0) {
+                    System.out.println("Invalid price");
+                }
                 
-            try {
-            priceD = Double.parseDouble(price);
-            } 
-                
-            catch (Exception e) {
-            System.out.println("Invalid input. Try again.");
-            continue;
+                step++;
+                continue;
+                // Expire
+                case 3:
+                expiry = requireExpiry();
+                if (expiry == -7) {
+                    step--;
+                    continue;
+                }
+
+                step++;
+                break;
             }
 
             System.out.println("----  Confirm Send ----");
             System.out.println("From: Accounting    To: Cashier");
             System.out.println("ID: " + request.getId() + "     Requesting: " + request.getDocument());
-            System.out.println("State " + state + "    Price " + priceD);
+            System.out.println("State " + state + "    Price " + price);
+            System.out.println("Will expire in " + expiry + " day/s" );
 
             switch (system.validate().editCancelContinue()) {
 
                 case "EDIT" -> {
+                step = 1;
                 continue;
                 }
 
@@ -241,31 +271,53 @@ public class Accounting extends Employee
             break;
 
         }
-        price = "" + priceD;
-        request.setPricee(price);
 
-        qm.moveToWindow(state, "CASHIER", system.genDate(), accQ, QueueSystem.getCashierQ());
+        request.setPricee(String.valueOf(price));
+
+        qm.moveToWindow(state, "CASHIER", system.genDate(), accQ, QueueSystem.getCashierQ(), system.genDate(expiry));
         System.out.println("Request sent to cashier");
     }
 
     private void registrarSendTo(QueueRequest request) {
 
         System.out.println("- Registrar Selected \n");
-        String state;
+        String state = "";
+        int expiry = 0;
 
-        while (true) {
+        int step = 1;
+        while (step <= 2) {
 
-            state = system.validate().requireText("Enter request state (X to go back)");
-            if (state.matches("[Xx]")) break;
+            switch (step) {
+
+                // State
+                case 1:
+                state = system.validate().requireText("Enter request state (X to go back)");
+                if (state.matches("[Xx]")) return;
+                step++;
+                continue;
+
+                // Expire
+                case 2:
+                expiry = requireExpiry();
+                if (expiry == -7) {
+                    step--;
+                    continue;
+                }
+
+                step++;
+                break;
+            }
 
             System.out.println("----  Confirm Send ----");
             System.out.println("From: Accounting    To: Registrar");
             System.out.println("ID: " + request.getId() + "     Requesting: " + request.getDocument());
-            System.out.println("State: " + state );
+            System.out.println("State: " + state);
+            System.out.println("Will expire in " + expiry + " day/s" );
 
             switch (system.validate().editCancelContinue()) {
 
                 case "EDIT" -> {
+                step = 1;
                 continue;
                 }
 
@@ -280,7 +332,8 @@ public class Accounting extends Employee
 
         }
 
-        qm.moveToWindow(state, "REGISTRAR", system.genDate(), accQ, QueueSystem.getRegistarQ());
+        qm.moveToWindow(state, "REGISTRAR", system.genDate(), accQ, QueueSystem.getRegistarQ(), system.genDate(expiry));
         System.out.println("Request sent to registrar");
     }
+
 }
