@@ -334,7 +334,7 @@ public class QueueSystem {
                 System.out.printf("%n   REQUESTED DOCUMENT: %-15s  %s%n", request.getDocument(), request.getState());
 
                 if (showPrice) System.out.printf("   Price: %-15s  %n", request.getPrice());
-                System.out.printf("%n  Will expire in: %-15s", request.getExpiry());
+                System.out.printf("%n  Will expire in: %-15s%n", request.getExpiry());
             }
 
             // UI

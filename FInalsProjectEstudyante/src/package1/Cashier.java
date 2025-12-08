@@ -269,7 +269,6 @@ public class Cashier extends Employee
         Reciept r = new Reciept();
 
         List<String> list = r.read();
-        System.out.println(list);
         int i = (list.size() + 9) / 10;
         int current = 1;
 
@@ -324,7 +323,7 @@ public class Cashier extends Employee
 
 
         public final void appendReci(QueueRequest request, String payment) {
-            String line = String.format("%s,%s,%s,%s,%s,%s,%s,%s", request.getId(), request.getStNum(), request.getDocument(), request.getState(), request.getWindow(), request.getDate(), request.getPrice(), payment);
+            String line = String.format("%s,%s,%s,%s,%s,%s,%s,%s,dummy", request.getId(), request.getStNum(), request.getDocument(), request.getState(), request.getWindow(), request.getDate(), request.getPrice(), payment);
             append(line);
         }
 
@@ -342,7 +341,6 @@ public class Cashier extends Employee
 
                     String parts[] = line.split(",");
 
-                    System.out.println(items);
                     QueueRequest request = QueueRequest.fromLine(line);
                     Reciept r = new Reciept(request, parts[7]);
                 }

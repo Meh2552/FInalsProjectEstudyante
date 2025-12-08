@@ -23,8 +23,8 @@ Walk-in,02000-123456,Papers,EXPIRED,[03-12-2025] 01:07,0022
 s2,02000-160420,SF10,EXPIRED,[08-12-2025] 09:50,0023
 rolang,02000-456512,SF10,Test cashier,[09-12-2025] 01:07,0024
 rolang,02000-456512,Form137,Paid,[09-12-2025] 01:07,0025
-rolang,02000-456512,Good Moral,Pending Payment,[09-12-2025] 01:07,0026
-rolang,02000-456512,Enrollment Certificate,Pending Payment,[09-12-2025] 01:07,0027
+rolang,02000-456512,Good Moral,Paid,[09-12-2025] 01:07,0026
+rolang,02000-456512,Enrollment Certificate,Paid,[09-12-2025] 01:07,0027
 rolang,02000-456512,Testdocu,TestAccounting,[09-12-2025] 01:30,0028
 Walk-in,02000-160420,TestCashier,Pending5,[09-12-2025] 01:32,0029
 s2,02000-160420,TestAccounting,Completed,[09-12-2025] 01:43,0030
