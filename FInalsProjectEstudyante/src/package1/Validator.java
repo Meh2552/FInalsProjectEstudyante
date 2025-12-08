@@ -111,9 +111,14 @@ public class Validator
             
             if (!input.isEmpty())
             {
+                if (input.contains(",")) {
+                System.out.println("Input cannot contain ','");
+                continue;
+                }
+
             	return input;
             }
-            
+
             System.out.println("Input cannot be empty.");
         }
     }
