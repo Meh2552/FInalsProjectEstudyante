@@ -1,5 +1,6 @@
 package package1;
 
+import displays.*;
 import java.util.*;
 
 public class Student extends User 
@@ -21,41 +22,48 @@ public class Student extends User
     {
         while (true) 
         {
-            System.out.println("=== STUDENT MENU ===");
-            System.out.println("[1] Request Document");
-            System.out.println("[2] View My Requests");
-            System.out.println("[3] Ask Concern (Helpdesk)");
-            System.out.println("[4] View Helpdesk Replies");
-            System.out.println("[5] Manage Account");
-            System.out.println("[6] Logout");
-            int choice = system.validate().menuChoice("Choose: ", 6);
+            ShowStudentMenuDisplay.studentMenuDisplay();
+            System.out.println("");
+            int choice = system.validate().menuChoice("                                        Choose: ", 6);
             
             if (choice == 1) 
             {
+                System.out.println("\n                                        \u001B[32m- Loading request document\u001B[0m");
+                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
             	requestDocument();
             }
             
             else if (choice == 2)
             {
+                System.out.println("\n                                        \u001B[32m- Loading request list\u001B[0m");
+                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
             	viewRequests();
             }
             
             else if (choice == 3)
             {
+                System.out.println("\n                                        \u001B[32m- Going to helpdesk\u001B[0m");
+                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
             	helpdesk();
             }
             
             else if (choice == 4)
             {
+                System.out.println("\n                                        \u001B[32m- Loading helpdesk replies\u001B[0m");
+                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
             	viewHelpdeskReplies();
             }
             
             else if (choice == 5) 
             {
+                System.out.println("\n                                        \u001B[32m- Going to account management\u001B[0m");
+                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
             	accountMan();
             }
 
             else if (choice == 6) {
+                System.out.println("\n                                        \u001B[32m- Returning...\u001B[0m");
+                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
                 return;
             }
         }
@@ -69,12 +77,9 @@ public class Student extends User
         
         while (true) {
 
-            System.out.println("[1] SF10");
-            System.out.println("[2] Form137");
-            System.out.println("[3] Good Moral");
-            System.out.println("[4] Enrollment Certificate");
-            System.out.println("[5] Go Back");
-            int choice = system.validate().menuChoice("Select: ", 5);
+            ShowStudentMenuDisplay.requestDocumentMenuDisplay();
+            System.out.println("");
+            int choice = system.validate().menuChoice("                                        Select: ", 5);
         
             doc = "";
         
@@ -131,7 +136,9 @@ public class Student extends User
         dm.addRequest(request);
         QueueSystem qs = new QueueSystem(request.getId(), price, system.genDate(1));
         
-        System.out.println("Request submitted.");
+        System.out.println("                                                                  ╔════════════════════════════════════════════════════════════════════╗");
+        System.out.println("                                                                  ║                         \u001B[32mRequest Submitted!\u001B[0m                         ║");
+        System.out.println("                                                                  ╚════════════════════════════════════════════════════════════════════╝");
     }
 
     private void viewRequests() 
@@ -141,7 +148,7 @@ public class Student extends User
         
         boolean found = false;
         
-        System.out.println("=== MY REQUESTS ===");
+        ShowStudentMenuDisplay.myRequestDisplay();
         
         for (DocumentRequest req : all) 
         {
@@ -154,7 +161,7 @@ public class Student extends User
         Collections.reverse(requestL);
         if (requestL.isEmpty())
         {
-        	System.out.println("No requests found.");
+        	System.out.println("                                        \u001B[31mNo requests found.\u001B[0m");
             return;
         }
 
@@ -169,24 +176,24 @@ public class Student extends User
                 if (items < (page - 1) * 7) continue;
                 else if (items >= page * 7) break;
 
-                System.out.println    ("     ╔═════════════════════════════════════════════════════════════╗");
-                System.out.printf("     ║  Request ID: %-10s               %20s  ║%n", request.getId(), request.getDate());
-                System.out.println    ("     ║─────────────────────────────────────────────────────────────║");
-                System.out.println    ("     ║                                                             ║");
-                System.out.printf("     ║  Document Requested: %-30s         ║%n", request.getDocName());
-                System.out.printf("     ║  State: %-30s                      ║%n", request.getStatus());
-                System.out.println    ("     ║                                                             ║");
-                System.out.println    ("     ╚═════════════════════════════════════════════════════════════╝");
+                System.out.println    ("                                                                       ╔═════════════════════════════════════════════════════════════╗");
+                System.out.printf("                                                                       ║  Request ID: %-10s               %20s  ║%n", request.getId(), request.getDate());
+                System.out.println    ("                                                                       ║─────────────────────────────────────────────────────────────║");
+                System.out.println    ("                                                                       ║                                                             ║");
+                System.out.printf("                                                                       ║  Document Requested: %-30s         ║%n", request.getDocName());
+                System.out.printf("                                                                       ║  State: %-30s                      ║%n", request.getStatus());
+                System.out.println    ("                                                                       ║                                                             ║");
+                System.out.println    ("                                                                       ╚═════════════════════════════════════════════════════════════╝");
 
             }
-            System.out.println("----------------------------");
+            System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
 
-            if (pageCount == 1) System.out.println(" Viewing page " + page);
-            else System.out.println(" Viewing page " + page + " out of " + pageCount);
+            if (pageCount == 1) System.out.println("                                        - Viewing page " + page);
+            else System.out.println("                                        - Viewing page " + page + " out of " + pageCount);
 
-            int input = system.validate().minMaxXChoice("Go to page ('x' to go back):", 1, pageCount);
+            int input = system.validate().minMaxXChoice("                                        Go to page ('x' to go back):", 1, pageCount);
             if (input == page) {
-                System.out.println("Already on page " + input);
+                System.out.println("                                        Already on page " + input);
                 continue;
             }
 
@@ -209,15 +216,10 @@ public class Student extends User
         while (true) 
         {
 
-            System.out.println("=== CREATE HELP DESK TICKET ===");
-            System.out.println("[1] Wrong student information");
-            System.out.println("[2] Grade correction");
-            System.out.println("[3] Payment concern");
-            System.out.println("[4] Document follow-up");
-            System.out.println("[5] Others (type your own issue)");
-            System.out.println("[6] Go Back");
+            ShowStudentMenuDisplay.helpdeskMenuDisplay();
+            System.out.println("");
 
-            int choice = system.validate().menuChoice("Select: ", 6);
+            int choice = system.validate().menuChoice("                                        Select: ", 6);
 
             if (choice == 1) 
             {
@@ -271,7 +273,10 @@ public class Student extends User
         HelpdeskTicket t = new HelpdeskTicket(id, record.getStudentNum(), issue, "Pending", date, "");
         hm.addTicket(t);
 
-        System.out.println("Helpdesk ticket created. Ticket ID: " + id);
+        System.out.println("                                                                  ╔════════════════════════════════════════════════════════════════════╗");
+        System.out.printf("                                                                  ║             \u001B[32mHelpdesk ticket created. Ticket ID: %04d!\u001B[0m             ║%n", id);
+        System.out.println("                                                                  ╚════════════════════════════════════════════════════════════════════╝");
+                                                
     }
 
     private void viewHelpdeskReplies() 
@@ -290,11 +295,11 @@ public class Student extends User
 
         if (myTickets.isEmpty()) 
         {
-            System.out.println("You have no helpdesk tickets.");
+            System.out.println("                                        \u001B[31mYou have no helpdesk tickets.\u001B[0m");
             return;
         }
 
-        System.out.println("=== MY HELP DESK TICKETS ===");
+        ShowStudentMenuDisplay.helpdeskRepliesDisplay();
 
         System.out.printf("%-4s | %-8s | %-14s | %-30s | %-16s | %-18s | %-12s%n", 
                 "No.", "TicketID", "Student", "Issue", "Window", "Last Modified", "Status");
@@ -321,7 +326,7 @@ public class Student extends User
                 idx++;
             }
 
-        int choose = system.validate().minMaxXChoice("Select ticket to view (X to go back): ", 1, myTickets.size());
+        int choose = system.validate().minMaxXChoice("                                        Select ticket to view (X to go back): ", 1, myTickets.size());
         if (choose == -1) return;
 
         HelpdeskTicket selected = myTickets.get(choose - 1);
@@ -400,26 +405,28 @@ public class Student extends User
         while (true) 
         {
 
-            System.out.println("=== Manage Account ===");
-            System.out.println("[1] Change Username");
-            System.out.println("[2] Change Password");
-            System.out.println("[3] Delete Account");
-            System.out.println("[4] Go Back");
-
-            int choice = system.validate().menuChoice("Select: ", 4);
+            ShowStudentMenuDisplay.ManageAccountDisplay();
+            System.out.println("");
+            int choice = system.validate().menuChoice("                                        Select: ", 4);
 
             if (choice == 1) 
             {
+                System.out.println("\n                                        \u001B[32m- Going to username change menu\u001B[0m");
+                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
             	changeUser();
             }
             
             else if (choice == 2)
             {
+                System.out.println("\n                                        \u001B[32m- Going to password change menu\u001B[0m");
+                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
             	changePassword();
             }
             
             else if (choice == 3)
             {
+                System.out.println("\n                                        \u001B[32m- Going to delete account menu\u001B[0m");
+                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
             	deleteAccount();
             }
             
@@ -435,14 +442,14 @@ public class Student extends User
     private void changeUser() {
         while (true) {
 
-        String user = system.validate().requireText("New Username or X to go back: ");
+        String user = system.validate().requireText("                                        New Username or X to go back: ");
 
         if (user.matches("[xX]")) {
             break;
         }
 
         if (system.userManager().usernameExists(user)) {
-            System.out.println("Username already exists.");
+            System.out.println("                                        \u001B[31mUsername already exists.\u001B[0m");
             continue;
         }
 
@@ -460,8 +467,11 @@ public class Student extends User
             return;
         }
 
-        System.out.println("Sucessfully changed username");
+        System.out.println("                                                                  ╔════════════════════════════════════════════════════════════════════╗");
+        System.out.println("                                                                  ║                    \u001B[32mSucessfully changed username\u001B[0m                    ║");
+        System.out.println("                                                                  ╚════════════════════════════════════════════════════════════════════╝");
         system.userManager().changeUser(record.getUsername(), user);
+        record.setUsername(user);
         return;
 
         }
@@ -470,27 +480,29 @@ public class Student extends User
     private void changePassword() {
         while (true) {
 
-            String pass = system.validate().requireText("New Password or X to go back: ");
+            String pass = system.validate().requireText("                                       New Password or X to go back: ");
             if (pass.matches("[xX]")) {
                 break;
             }
 
-            String conPass = system.validate().requireText("Confirm Password (Type 'x' to go back) : "); // Confirm password
+            String conPass = system.validate().requireText("                                       Confirm Password (Type 'x' to go back) : "); // Confirm password
             if (conPass.matches("[xX]")) {
                 continue;
             }
 
             // Confirms if password and confirmed password is the same
             if (!pass.equals(conPass)) {
-                System.out.println("Incorrect password, type your password again to confirm");
+                System.out.println("                                        \u001B[31mIncorrect password, type your password again to confirm\u001B[0m");
                 continue;
             }
 
-            boolean confirm = system.validate().confirm("Confirm change password? ");
+            boolean confirm = system.validate().confirm("                                       Confirm change password? ");
 
             if (confirm) system.userManager().changePass(record.getUsername(), pass);
             else continue;
-            System.out.println("Sucessfully changed password");
+            System.out.println("                                                                  ╔════════════════════════════════════════════════════════════════════╗");
+            System.out.println("                                                                  ║                    \u001B[32mSucessfully changed password\u001B[0m                    ║");
+            System.out.println("                                                                  ╚════════════════════════════════════════════════════════════════════╝");
             return;
         }
     }
@@ -503,14 +515,16 @@ public class Student extends User
         System.out.println("= THIS USER WILL BE DELETED ");
 
 
-        if (system.validate().confirm("Are you sure? ")) 
+        if (system.validate().confirm("                                        Are you sure? ")) 
         { //1st confirm
 
             // second con
-            if (system.validate().confirm("Warning: this user will be permanently deleted, you will be put back onto the login screen. "))  
+            if (system.validate().confirm("                                        \\u001B[31mWarning: this user will be permanently deleted, you will be put back onto the login screen. Confirm? \\u001B"))  
             {
                 system.userManager().deleteUser(user);
-                System.out.println(user + " was deleted");
+                System.out.println("                                                                  ╔════════════════════════════════════════════════════════════════════╗");
+                System.out.printf("                                                                  ║ \u001B[32m%40s was deleted\u001B[0m               ║%n", "User: " + user);
+                System.out.println("                                                                  ╚════════════════════════════════════════════════════════════════════╝");
                 new UserAuth(system).start();
             }
 

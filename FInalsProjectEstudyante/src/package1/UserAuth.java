@@ -1,8 +1,9 @@
 package package1;
 
+import displays.*;
+
 public class UserAuth 
 {
-
     private MainSystem system;
 
     public UserAuth(MainSystem system) 
@@ -14,25 +15,30 @@ public class UserAuth
     {
         while (true) 
         {
-            System.out.println("=== E-STUDYANTE ===");
-            System.out.println("[1] Sign Up");
-            System.out.println("[2] Login");
-            System.out.println("[3] Exit");
-            int c = system.validate().menuChoice("Choose: ", 3);
+
+            ShowMainSystemMenuDisplay.mainMenuDisplay();
+            System.out.println("");
+            int c = system.validate().menuChoice("                                        Choose: ", 3);
             
             if (c == 1) 
             {
+                System.out.println("\n                                        \u001B[32m- Going to sign-up menu\u001B[0m");
+                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
             	signupStudent();
             }
             
             else if (c == 2)
             {
+                System.out.println("\n                                        \u001B[32m- Going to log-in menu\u001B[0m");
+                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
             	login();
             }
             
             else if (c == 3)
             {
-                System.out.println("Thank you for using E-STUDYANTE! ");
+                System.out.println("                                                                  ╔════════════════════════════════════════════════════════════════════╗");
+                System.out.println("                                                                  ║                   \u001B[32mThank you for using E-STUDYANTE!\u001B[0m                 ║");
+                System.out.println("                                                                  ╚════════════════════════════════════════════════════════════════════╝");
                 System.exit(0);
             }
         }
@@ -41,7 +47,6 @@ public class UserAuth
     private void signupStudent() 
     {
 
-        boolean isSignUp = true;
         String user = "", pass = "", conPass, stNum = "", name = "";
 
 
@@ -53,8 +58,8 @@ public class UserAuth
 
                 // Username
                 case 1:
-                System.out.println("=== SIGN UP ===");
-                user = system.validate().requireText("Username (Type 'x' to go back) : ");
+                ShowMainSystemMenuDisplay.signUpDisplay();
+                user = system.validate().requireText("                                        Username (Type 'x' to go back) : ");
             
                 if (user.matches("[xX]")) 
                 {
@@ -63,7 +68,7 @@ public class UserAuth
 
                 // Confirms if username is already in the system
                 if (system.userManager().usernameExists(user)) {
-                    System.out.println("Username exists.");
+                    System.out.println("                                        Username exists.");
                     continue;
                 }
 
@@ -73,7 +78,7 @@ public class UserAuth
 
                 // Password
                 case 2:
-                pass = system.validate().requireText("Password (Type 'x' to go back) : ");
+                pass = system.validate().requireText("                                        Password (Type 'x' to go back) : ");
                 if (pass.matches("[xX]")) {
                     step--;
                     break;
@@ -84,7 +89,7 @@ public class UserAuth
 
                 // Confirm Passowrd
                 case 3:
-                conPass = system.validate().requireText("Confirm Password (Type 'x' to go back) : "); // Confirm password
+                conPass = system.validate().requireText("                                        Confirm Password (Type 'x' to go back) : "); // Confirm password
                 if (conPass.matches("[xX]")) {
                     step--;
                     break;
@@ -92,7 +97,7 @@ public class UserAuth
 
                 // Confirms if password and confirmed password is the same
                 if (pass.equals(conPass)) step++;
-                else System.out.println("Incorrect password, type your password again to confirm");
+                else System.out.println("                                        Incorrect password, type your password again to confirm");
                 break;
 
 
@@ -105,7 +110,7 @@ public class UserAuth
                 } while (system.userManager().studentNumExists(stNum));
                 // End of pass loop
 
-                name = system.validate().requireText("Full name: (X to go back) ");
+                name = system.validate().requireText("                                        Full name: (X to go back) ");
                 if (name.matches("[xX]")) {
                     step = 2;
                     break;
@@ -141,7 +146,9 @@ public class UserAuth
         UserRecord r = new UserRecord(user, pass, stNum, name);
         system.userManager().addUser(r);
         
-        System.out.println("Account created.");
+        System.out.println("                                                                  ╔════════════════════════════════════════════════════════════════════╗");
+        System.out.println("                                                                  ║                   \u001B[32m        Account Created!        \u001B[0m                 ║");
+        System.out.println("                                                                  ╚════════════════════════════════════════════════════════════════════╝");
     }
 
     private void login() 
@@ -149,18 +156,18 @@ public class UserAuth
         // Login loop
         while (true) { 
 
-            System.out.println("=== LOGIN ===");
+            ShowMainSystemMenuDisplay.loginDisplay();
 
             // Input prompt loop
             String user, pass;
             while (true) {
 
-                user = system.validate().requireText("Username (Type 'x' to go back) : ");
+                user = system.validate().requireText("                                        Username (Type 'x' to go back) : ");
                 if (user.matches("[xX]")) {
                     return;
                 }
 
-                pass = system.validate().requireText("Password (Type 'x' to go back) : ");
+                pass = system.validate().requireText("                                        Password (Type 'x' to go back) : ");
                 if (pass.matches("[xX]")) {
                     continue;
                 }
@@ -171,7 +178,7 @@ public class UserAuth
             UserRecord record = system.userManager().verify(user, pass);
 
             if (record == null) {
-                System.out.println("Wrong credentials.");
+                System.out.println("                                        \u001B[31mWrong Credentials.\u001B[0m");
                 continue;
             }
 
@@ -211,11 +218,11 @@ public class UserAuth
         
         else 
         {
-            System.out.println("invalid role.");
+            System.out.println("                                        \u001B[31minvalid role.\u001B[0m");
             return;
         }
         
-        System.out.println("Welcome, " + record.getFullName());
+        System.out.println("                                        Welcome, " + record.getFullName());
         
         u.start();
     }

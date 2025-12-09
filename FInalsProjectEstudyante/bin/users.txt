@@ -3,5 +3,5 @@ a1,a1pass,ACCOUNTING,Accounting1
 r1,r1pass,REGISTRAR,Registrar1
 admin,adminpass,ADMIN,ADMINISTRATOR
 s2,s2pass,STUDENT,02000-160420,Jester Poblete
-Rolang,Furioso,STUDENT,02000-456512,Roland Orlando
+rolang,Furioso,STUDENT,02000-456512,Roland Orlando
 s1,s1pass,STUDENT,02000-899007,John Username III
