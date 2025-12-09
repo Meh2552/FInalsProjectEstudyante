@@ -324,8 +324,8 @@ public class QueueSystem {
                     if (limit != 0 && count >= limit) break;
                 }
 
-                if (showPrice) System.out.println("     ╚" + "═".repeat(150) + "╝");
-                else System.out.println("     ╚" + "═".repeat(134) + "╝");
+                if (showPrice) System.out.println("                           ╚" + "═".repeat(150) + "╝");
+                else System.out.println("                                   ╚" + "═".repeat(134) + "╝");
 
             }
 
@@ -333,43 +333,49 @@ public class QueueSystem {
 
             public ViewQueue(QueueRequest request, boolean showPrice) {
 
-                System.out.println    ("     ╔═════════════════════════════════════════════════════════════╗");
-                System.out.printf("     ║  Current Request: %-10s          %20s  ║%n", request.getId(), request.getDate());
-                System.out.println    ("     ║                                                             ║");
-                String price = String.format("Php %.2f", Double.valueOf(request.getPrice()));
-                System.out.printf("     ║  Document Requested: %-10s       %20s  ║%n", request.getDocument(), price);
-                System.out.printf("     ║  State: %-30s                      ║%n", request.getState());
-                System.out.printf("     ║  Will expire in: %-11s          %20s  ║%n", request.getExpiry(), " ");
-                System.out.println    ("     ╚═════════════════════════════════════════════════════════════╝");
+                System.out.println    ("                                                                       ╔═════════════════════════════════════════════════════════════╗");
+                System.out.printf("                                                                       ║  Current Request: %-10s          %20s  ║%n", request.getId(), request.getDate());
+                System.out.println    ("                                                                       ║                                                             ║");
+
+                if (showPrice) {
+                    String price = String.format("Php %.2f", Double.valueOf(request.getPrice()));
+                    System.out.printf("                                                                       ║  Document Requested: %-10s       %20s  ║%n", request.getDocument(), price);
+                }
+
+                else System.out.printf("                                                                       ║  Document Requested: %-10s       %20s  ║%n", request.getDocument(), "");
+                
+                System.out.printf("                                                                       ║  State: %-30s                      ║%n", request.getState());
+                System.out.printf("                                                                       ║  Will expire in: %-11s          %20s  ║%n", request.getExpiry(), " ");
+                System.out.println    ("                                                                       ╚═════════════════════════════════════════════════════════════╝");
             }
 
             // UI
             public void viewDisplay(boolean showPrice) {
 
                 if (showPrice) {
-                    System.out.println("     ╔" + "═".repeat(150) + "╗");
-                    System.out.printf("     ║       %-7s   │ %-12s │ %-25s   │ %-18s │ %-10s │ %-12s  │ %-35s ║%n", "Request", "Student","Document", "Last Modified", "Expiry", "Price", "Status");
+                    System.out.println("                           ╔" + "═".repeat(150) + "╗");
+                    System.out.printf("                           ║       %-7s   │ %-12s │ %-25s   │ %-18s │ %-10s │ %-12s  │ %-35s ║%n", "Request", "Student","Document", "Last Modified", "Expiry", "Price", "Status");
                     String bottom = String.format("║       %-7s   ┼ %-12s ┼ %-25s   ┼ %-18s ┼ %-10s ┼ %-12s  ┼ %-35s ║", "", "", "", "", "", "", "").replace(" ", "─");
-                    System.out.println("     " + bottom);
+                    System.out.println("                           " + bottom);
                 }
                 else {
-                    System.out.println("     ╔" + "═".repeat(134) + "╗");
-                    System.out.printf("     ║       %-7s   │ %-12s │ %-25s   │ %-18s │ %-10s │ %-35s ║%n", "Request", "Student","Document", "Last Modified", "Expiry", " Status");
+                    System.out.println("                                   ╔" + "═".repeat(134) + "╗");
+                    System.out.printf("                                   ║       %-7s   │ %-12s │ %-25s   │ %-18s │ %-10s │ %-35s ║%n", "Request", "Student","Document", "Last Modified", "Expiry", " Status");
                     String bottom = String.format("║       %-7s   ┼ %-12s ┼ %-25s   ┼ %-18s ┼ %-10s ┼ %-35s ║", "", "", "", "", "", "", "").replace(" ", "─");
-                    System.out.println("     " + bottom);
+                    System.out.println("                                   " + bottom);
                 }
             }
 
 
             public void requestFormat(QueueRequest request, int index) {
 
-                System.out.printf("     ║ %4d. %-7s   │ %-12s │ %-25s   │ %-18s │ %-10s │ %-35s ║%n",index , request.getId(), request.getStNum(), request.getDocument(), request.getDate(), request.getExpiry(), request.getState());
+                System.out.printf("                                   ║ %4d. %-7s   │ %-12s │ %-25s   │ %-18s │ %-10s │ %-35s ║%n",index , request.getId(), request.getStNum(), request.getDocument(), request.getDate(), request.getExpiry(), request.getState());
 
             }
 
             public void requestFormat(QueueRequest request, int index, boolean showPrice) {
 
-                System.out.printf("     ║ %4d. %-7s   │ %-12s │ %-25s   │ %-18s │ %-10s │ %-12s  │ %-35s ║%n", index, request.getId(), request.getStNum(), request.getDocument(), request.getDate(), request.getExpiry() , request.getPrice(), request.getState());
+                System.out.printf("                           ║ %4d. %-7s   │ %-12s │ %-25s   │ %-18s │ %-10s │ %-12s  │ %-35s ║%n", index, request.getId(), request.getStNum(), request.getDocument(), request.getDate(), request.getExpiry() , request.getPrice(), request.getState());
 
             }
 
@@ -525,8 +531,8 @@ public class QueueSystem {
                 }
 
 
-                if (showPrice) System.out.println("     ╚" + "═".repeat(144) + "╝");
-                else System.out.println("     ╚" + "═".repeat(128) + "╝");
+                if (showPrice) System.out.println("                            ╚" + "═".repeat(144) + "╝");
+                else System.out.println("                                     ╚" + "═".repeat(128) + "╝");
                 prompt(pageCount, page);
             }
 
@@ -576,8 +582,8 @@ public class QueueSystem {
                 }
 
 
-                if (showPrice) System.out.println("     ╚" + "═".repeat(144) + "╝");
-                else System.out.println("     ╚" + "═".repeat(128) + "╝");
+                if (showPrice) System.out.println("                            ╚" + "═".repeat(144) + "╝");
+                else System.out.println("                                     ╚" + "═".repeat(128) + "╝");
                 prompt(pageCount, page);
             }
 
@@ -585,46 +591,45 @@ public class QueueSystem {
             private void viewDisplay(boolean showPrice) {
 
                 if (showPrice) {
-                    System.out.println("     ╔" + "═".repeat(144) + "╗");
-                    System.out.printf("     ║ %-15s   │ %-7s   │ %-12s │ %-25s   │ %-18s │ %-12s  │ %-25s    ║%n", "Window", "Request", "Student", "Document", "Date & Time", "Price", "Status");
+                    System.out.println("                            ╔" + "═".repeat(144) + "╗");
+                    System.out.printf("                            ║ %-15s   │ %-7s   │ %-12s │ %-25s   │ %-18s │ %-12s  │ %-25s    ║%n", "Window", "Request", "Student", "Document", "Date & Time", "Price", "Status");
                     String bottom = String.format("║ %-15s   ┼ %-7s   ┼ %-12s ┼ %-25s   ┼ %-18s ┼ %-12s  ┼ %-25s    ║", "", "", "", "", "", "", "").replace(" ", "─");
-                    System.out.println("     " + bottom);
+                    System.out.println("                            " + bottom);
                 } 
                 
                 else {
-                    System.out.println("     ╔" + "═".repeat(128) + "╗");
-                    System.out.printf("     ║ %-15s   │ %-7s   │ %-12s │ %-25s   │ %-18s │ %-25s    ║%n", "Window", "Request", "Student", "Document", "Date & Time", " Status");
+                    System.out.println("                                     ╔" + "═".repeat(128) + "╗");
+                    System.out.printf("                                     ║ %-15s   │ %-7s   │ %-12s │ %-25s   │ %-18s │ %-25s    ║%n", "Window", "Request", "Student", "Document", "Date & Time", " Status");
                     String bottom = String.format("║ %-15s   ┼ %-7s   ┼ %-12s ┼ %-25s   ┼ %-18s ┼ %-25s    ║", "", "", "", "", "", "", "").replace(" ", "─");
-                    System.out.println("     " + bottom);
+                    System.out.println("                                     " + bottom);
                 }
 
             }
 
             private void empty() {
-                System.out.println("----------------------------");
-                System.out.println("     No items in history to be read");
-                System.out.println("-----------------------------");
+                System.out.println("\n                                        \u001B[31mNo items in history to be read\u001B[0m");
             }
 
             private void request(String item, boolean showPrice) {
                 String parts[] = item.split(",");
 
                 if (showPrice) {
-                   if (parts.length == 7) System.out.printf("     ║ %-15s   │ %-7s   │ %-12s │ %-25s   │ %-18s │ %-12s  │ %-25s    ║%n", parts[0], parts[1], parts[2], parts[3], parts[4], parts[6], parts[5]);
-                    else System.out.printf("     ║ %-15s   │ %-7s   │ %-12s │ %-25s   │ %-18s │ %-12s  │ %-25s    ║%n", parts[0], parts[1], parts[2], parts[3], parts[4], "-", parts[5]);
+                   if (parts.length == 7) System.out.printf("                            ║ %-15s   │ %-7s   │ %-12s │ %-25s   │ %-18s │ %-12s  │ %-25s    ║%n", parts[0], parts[1], parts[2], parts[3], parts[4], parts[6], parts[5]);
+                    else System.out.printf("                            ║ %-15s   │ %-7s   │ %-12s │ %-25s   │ %-18s │ %-12s  │ %-25s    ║%n", parts[0], parts[1], parts[2], parts[3], parts[4], "-", parts[5]);
                 }
 
                 else {
-                    System.out.printf("     ║ %-15s   │ %-7s   │ %-12s │ %-25s   │ %-18s │ %-25s    ║%n", parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]);
+                    System.out.printf("                                     ║ %-15s   │ %-7s   │ %-12s │ %-25s   │ %-18s │ %-25s    ║%n", parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]);
                 }
             }
 
             private void prompt(int pageCount, int page) {
-                System.out.println("----------------------------");
+                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
+
                 if (pageCount == 1) {
-                    System.out.println(" Viewing page " + page);
+                    System.out.println("                                        Viewing page " + page);
                 } else {
-                    System.out.println(" Viewing page " + page + " out of " + pageCount);
+                    System.out.println("                                        Viewing page " + page + " out of " + pageCount);
                 }
 
             }

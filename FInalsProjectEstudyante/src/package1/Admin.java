@@ -1,5 +1,6 @@
 package package1;
 
+import displays.*;
 import java.util.*;
 
 public class Admin extends User 
@@ -17,47 +18,55 @@ public class Admin extends User
     @Override
     public void start() {
         while (true) {
-            System.out.println("=== ADMIN MENU ===");
-            System.out.println("[1] View Users");
-            System.out.println("[2] Add Employee");
-            System.out.println("[3] Respond to Concern");
-            System.out.println("[4] View All Helpdesk Responses");
-            System.out.println("[5] See Queue History");
-            System.out.println("[6] Delete User");
-            System.out.println("[7] Logout");
-            int choice = system.validate().menuChoice("Choose: ", 7     );
+            ShowAdminMenuDisplay.AdminMenuDisplay();
+            System.out.println("");
+            int choice = system.validate().menuChoice("                                        Choose: ", 7     );
             
             if (choice == 1)
             {
+                System.out.println("\n                                        \u001B[32m- Loading users\u001B[0m");
+                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
             	viewUsers();
             }
             
             else if (choice == 2)
             {
+                System.out.println("\n                                        \u001B[32m- Going to add employee menu\u001B[0m");
+                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
             	addEmployee();
             }
             
             else if (choice == 3)
             {
+                System.out.println("\n                                        \u001B[32m- Going to ADMIN helpdesk response\u001B[0m");
+                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
             	respondToTicketAdmin();
             }
             
             else if (choice == 4)
             {
+                System.out.println("\n                                        \u001B[32m- Loading helpdesk responses\u001B[0m");
+                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
             	viewAllResponses();
             }
             
             else if (choice == 5) {
+                System.out.println("\n                                        \u001B[32m- Going to ADMIN history menu\u001B[0m");
+                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
                 AdminHistory ah = new AdminHistory();
             }
 
             else if (choice == 6)
             {
+                System.out.println("\n                                        \u001B[32m- Going to delete user menu\u001B[0m");
+                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
             	deleteUser();
             }
             
             else if (choice == 7)
             {
+                System.out.println("\n                                        \u001B[32m- Returning...\u001B[0m");
+                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
             	return;
             }
         }
@@ -67,7 +76,7 @@ public class Admin extends User
     {
         List<UserRecord> list = um.loadAll();
         
-        System.out.println("=== LIST OF USERS ===");
+        ShowAdminMenuDisplay.ListOfUsersDisplay();
         
         System.out.println("- Students -");
         displayUser(UserRecord.Role.STUDENT, list);
@@ -97,25 +106,25 @@ public class Admin extends User
 
         while (true) {
 
-            user = system.validate().requireText("New username (Input 'x' to go back) : ");
+            user = system.validate().requireText("                                        New username (Input 'x' to go back) : ");
             if (user.equalsIgnoreCase("x")) return;
 
             if (um.usernameExists(user)) {
-                System.out.println("Username exists.");
+                System.out.println("                                        \u001B[31mUsername already exists.\u001B[0m");
                 continue;
             }
             
             Boolean back = false;
             while (true) {
 
-                pass = system.validate().requireText("Password (Input 'x' to go back): ");
+                pass = system.validate().requireText("                                        Password (Input 'x' to go back): ");
                 if (pass.equalsIgnoreCase("x")) {
                     back = true;
                     break; 
                 }
 
-                System.out.println("[1] Cashier [2] Registrar [3] Accounting [4] Admin, [5] to go back)"); 
-                int r = system.validate().menuChoice("Choose role: ", 5);
+                System.out.println("                                        [1] Cashier [2] Registrar [3] Accounting [4] Admin, [5] to go back)"); 
+                int r = system.validate().menuChoice("                                        Choose role: ", 5);
 
                 if (r == 1) {
                     role = UserRecord.Role.CASHIER;
@@ -132,7 +141,7 @@ public class Admin extends User
 
             if (back) continue;
 
-            name = system.validate().requireText("Full name: ");
+            name = system.validate().requireText("                                        Full name: ");
 
             System.out.println("= CONFIRM EMPLOYEE CREATION: =");
             System.out.println("- Username: " + user);
@@ -161,7 +170,9 @@ public class Admin extends User
         
         um.addUser(new UserRecord(user, pass, role, name));
         
-        System.out.println("Employee created.");
+        System.out.println("                                                                  ╔════════════════════════════════════════════════════════════════════╗");
+        System.out.println("                                                                  ║                          \u001B[32mEmployee created\u001B[0m                          ║");
+        System.out.println("                                                                  ╚════════════════════════════════════════════════════════════════════╝");
     }
     
     public void respondToTicketAdmin()
@@ -169,7 +180,7 @@ public class Admin extends User
         List<HelpdeskTicket> tickets = system.helpdeskManager().loadTickets();
         if (tickets.size() == 0)
         {
-            System.out.println("No tickets.");
+            System.out.println("                                        \u001B[31mNo tickets.\u001B[0m");
             return;
         }
 
@@ -202,7 +213,7 @@ public class Admin extends User
                 idx++;
             }
 
-            String selStr = system.validate().requireText("Select ticket (or X to go back): ");
+            String selStr = system.validate().requireText("                                        Select ticket (or X to go back): ");
             
             if (selStr.equalsIgnoreCase("X")) return;
 
@@ -213,21 +224,22 @@ public class Admin extends User
                 sel = Integer.parseInt(selStr);
                 if (sel < 1 || sel > tickets.size()) 
                 {
-                    System.out.println("Invalid selection. Try again.");
+                    System.out.println("                                        \u001B[31mInvalid selection. Try again.\u001B[0m");
                     continue;
                 }
             } 
             
             catch (NumberFormatException e) 
             {
-                System.out.println("Invalid input. Try again.");
+                System.out.println("                                        \u001B[31mInvalid input. Try again.\u001B[0m");
                 continue;
             }
             
             HelpdeskTicket chosen = tickets.get(sel - 1);
 
-            String action = system.validate().requireText("Type [R]eply, [E]ndorse to window, [X] to go back: ");
-            if (action.equalsIgnoreCase("X")) return;
+            ShowAdminMenuDisplay.RespondToConcernChoice();
+            String action = system.validate().requireText("                                        Choose: ");
+            if (action.equalsIgnoreCase("C")) return;
 
             if (action.equalsIgnoreCase("E")) {
                 // Endorse menu now accepts X to go back
@@ -245,14 +257,14 @@ public class Admin extends User
                         
                         if (w < 1 || w > 3) 
                         {
-                            System.out.println("Invalid selection. Try again.");
+                            System.out.println("                                        \u001B[31mInvalid selection. Try again.\u001B[0m");
                             continue;
                         }
                     } 
                     
                     catch (NumberFormatException e) 
                     {
-                        System.out.println("Invalid input. Try again.");
+                        System.out.println("                                        \u001B[31mInvalid selection. Try again.\u001B[0m");
                         continue;
                     }
 
@@ -266,11 +278,13 @@ public class Admin extends User
                 
                 if (ok) 
                 {
-                    System.out.println("Ticket endorsed to " + window + " successfully.");
+                    System.out.println("                                                                  ╔════════════════════════════════════════════════════════════════════╗");
+                    System.out.printf("                                                                  ║            \u001B[32mSucessfully endorsed ticket to %-15s\u001B[0m          ║%n", window);
+                    System.out.println("                                                                  ╚════════════════════════════════════════════════════════════════════╝");
                 } 
                 else 
                 {
-                    System.out.println("Failed to endorse ticket.");
+                    System.out.println("                                        \u001B[31mFailed to endorse ticket.\u001B[0m");
                 }
                 
                 return;
@@ -279,7 +293,7 @@ public class Admin extends User
             
             else if (action.equalsIgnoreCase("R"))
             {
-                String respMsg = system.validate().requireText("Type your response message: ");
+                String respMsg = system.validate().requireText("                                        Type your response message: ");
                 String ts = system.genDate();
                 String responderName = record.getFullName();
                 HelpdeskResponse resp = new HelpdeskResponse(chosen.getId(), responderName, respMsg, ts);
@@ -288,12 +302,14 @@ public class Admin extends User
                 chosen.setStatus("Answered");
                 system.helpdeskManager().saveTickets(tickets);
 
-                System.out.println("Response saved and ticket marked Answered.");
+                System.out.println("                                                                  ╔════════════════════════════════════════════════════════════════════╗");
+                System.out.println("                                                                  ║              \u001B[32mResponse saved and ticket marked Answered.\u001B[0m            ║");
+                System.out.println("                                                                  ╚════════════════════════════════════════════════════════════════════╝");
                 return;
             }
             else
             {
-                System.out.println("Invalid option.");
+                System.out.println("                                        \u001B[31mInvalid option.\u001B[0m");
                 continue;
             }
         }
@@ -305,8 +321,7 @@ public class Admin extends User
         
         if (rlist.size() == 0) 
         {
-            System.out.println("No helpdesk responses yet.");
-            
+            System.out.println("                                        \u001B[31mNo helpdesk responses yet.\u001B[0m");
             return;
         }
         
@@ -321,16 +336,20 @@ public class Admin extends User
 
     private void deleteUser() 
     {
-        String username = system.validate().requireText("Username to delete: ");
+        String username = system.validate().requireText("                                        Username to delete: ");
+        if (!system.validate().confirm("                                        Confirm delete? ")) return;
         
         if (um.usernameExists(username)) 
         {
             um.deleteUser(username);
-            System.out.println("Deleted.");
+
+            System.out.println("                                                                  ╔════════════════════════════════════════════════════════════════════╗");
+            System.out.println("                                                                  ║                    \u001B[32mUser was sucessfully deleted\u001B[0m                    ║");
+            System.out.println("                                                                  ╚════════════════════════════════════════════════════════════════════╝");
         }
         else 
         {
-            System.out.println("User does not exist.");
+            System.out.println("                                        \u001B[31mUser does not exist.\u001B[0m");
         }
     }
 
@@ -344,16 +363,14 @@ public class Admin extends User
 
             while (true) {
 
-                System.out.println("=======View History==========");
-                System.out.println("[1] Cashier");
-                System.out.println("[2] Accounting");
-                System.out.println("[3] Registrar");
-                System.out.println("[4] All");
-                System.out.println("[5] Back");
-
+                ShowAdminMenuDisplay.SeeHistoryAdminDisplay();
+                System.out.println("");
                 switch (system.validate().menuChoice("Choose: ", 5)) {
 
                 case 1:
+                System.out.println("\n                                        \u001B[32m- Loading cashier history\u001B[0m");
+                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
+
                 ArrayList<String> historyTag = new ArrayList<>();
                 historyTag.add("CASHIER");
                 historyTag.add("PAUSED");
@@ -361,22 +378,34 @@ public class Admin extends User
                 break;
 
                 case 2:
+                System.out.println("\n                                        \u001B[32m- Loading accounting history\u001B[0m");
+                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
+                    
                 ArrayList<String> historyTag2 = new ArrayList<>();
                 historyTag2.add("ACCOUNTING");
                 history(1, historyTag2, false);
                 break;
 
                 case 3:
+                System.out.println("\n                                        \u001B[32m- Loading registrar history\u001B[0m");
+                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
+
                 ArrayList<String> historyTag3 = new ArrayList<>();
                 historyTag3.add("REGISTRAR");
                 history(1, historyTag3, false);
                 break;
 
                 case 4:
+                System.out.println("\n                                        \u001B[32m- Loading request history\u001B[0m");
+                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
+
                 historyDis();
                 break;
 
                 case 5:
+                System.out.println("\n                                        \u001B[32m- Returning....\u001B[0m");
+                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
+
                 return;
 
                 }
@@ -393,10 +422,10 @@ public class Admin extends User
 
             while (true) {
                 int max = system.queueSystem().getHistoryManager().countEntry(statements);
-                int input = system.validate().minMaxXChoice("Go to page ('x' to go back):", 1, max);
+                int input = system.validate().minMaxXChoice("                                        Go to page ('x' to go back):", 1, max);
 
                 if (input == current) {
-                    System.out.println("Already on page " + input);
+                    System.out.println("                                        Already on page " + input);
                     continue;
                 }
 
@@ -419,9 +448,9 @@ public class Admin extends User
             while (true) {
 
                 int max = system.queueSystem().getHistoryManager().countEntry();
-                int input = system.validate().minMaxXChoice("Go to page ('x' to go back):", 1, max);
+                int input = system.validate().minMaxXChoice("                                        Go to page ('x' to go back):", 1, max);
                 if (input == current) {
-                    System.out.println("Already on page " + input);
+                    System.out.println("                                        Already on page " + input);
                 }
                 if (input == -1) {
                     return;

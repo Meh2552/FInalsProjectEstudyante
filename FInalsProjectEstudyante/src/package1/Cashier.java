@@ -1,5 +1,6 @@
 package package1;
 
+import displays.*;
 import java.util.*;
 
 public class Cashier extends Employee 
@@ -26,44 +27,50 @@ public class Cashier extends Employee
         while (true)
         {
             qm.expire(system.genDate());
-            System.out.println("\n=== CASHIER MENU ===");
-            System.out.println("[1] View Request Status");
-            System.out.println("[2] Create Request");
-            System.out.println("[3] Manage Requests");
-            System.out.println("[4] Respond to Helpdesk");
-            System.out.println("[5] View Helpdesk Responses");
-            System.out.println("[6] See History");
-            System.out.println("[7] View Reciepts");
-            System.out.println("[8] Logout");
-            int choice = system.validate().menuChoice("Choose: ", 8);
+            
+            ShowCashierMenuDisplay.CashierMenuDisplay();
+            System.out.println("");
+            int choice = system.validate().menuChoice("                                        Choose: ", 8);
             
             if (choice == 1)
             {
+                System.out.println("\n                                        \u001B[32m- Loading Requests\u001B[0m");
+                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
             	requestStatus();
             }
             
             else if (choice == 2)
             {
+                System.out.println("\n                                        \u001B[32m- Going to create request menu\u001B[0m");
+                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
                 createRequest();
             }
 
             else if (choice == 3)
             {
+                System.out.println("\n                                        \u001B[32m- Going to request manager\u001B[0m");
+                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
                 requestManager();
             }
             
             else if (choice == 4)
             {
+                System.out.println("\n                                        \u001B[32m- Going to helpdesk\u001B[0m");
+                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
             	respondToTicket();
             }   
 
             else if (choice == 5)
             {
+                System.out.println("\n                                        \u001B[32m- Loading helpdesk respones\u001B[0m");
+                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
                 viewResponse();
             }
             
             else if (choice == 6)
             {
+                System.out.println("\n                                        \u001B[32m- Loading cashier history\u001B[0m");
+                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
                 ArrayList<String> historyTag = new ArrayList<>();
                 historyTag.add("CASHIER");
                 historyTag.add("PAUSED");
@@ -73,11 +80,15 @@ public class Cashier extends Employee
             
             else if (choice == 7)
             {
+                System.out.println("\n                                        \u001B[32m- Loading reciepts\u001B[0m");
+                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
             	reciDisplay();
             }
 
             else if (choice == 8)
             {
+                System.out.println("\n                                        \u001B[32m- Returning...\u001B[0m");
+                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
             	return;
             }
         }
@@ -87,22 +98,25 @@ public class Cashier extends Employee
     @Override
     public void displayRequest() {
         if (cashierQ.isEmpty()){
-            System.out.println("No items in queue");
+            System.out.println("                                        \u001B[31mNo items in queue\u001B[0m");
             return;
         }
 
-        System.out.println("===== Current =====");
+        ShowEmployeeDisplay.CurrentRequestsDisplay();
+        System.out.println("");
         qm.loadViewQueue(cashierQ.peek(), true);
     }
 
     private void requestStatus() {
 
-        System.out.println("----  PENDING  ----");
+        ShowEmployeeDisplay.PendingRequestsDisplay();
+        System.out.println("");
         qm.loadViewQueue(qs.PQtoList(cashierQ), false, true, false, 0);
 
-        System.out.println("----  PAUSED  ----");
+        ShowEmployeeDisplay.PausedRequestsDisplay();
+        System.out.println("");
         if (!qm.loadViewQueue(pauseQ, false, true, false, 10)) {
-            System.out.println("No paused payments.");
+            System.out.println("                                        \u001B[31mNo paused payments.\u001B[0m");
         }
 
     }
@@ -111,13 +125,13 @@ public class Cashier extends Employee
     public void requestManager() {
         while (true) {
             if (pauseQ.isEmpty() && cashierQ.isEmpty()) {
-                System.out.println("No items in queue");
+                System.out.println("                                        \u001B[31mNo items in queue\u001B[0m");
                 return;
             }
 
             super.requestManager();
             
-            String select = system.validate().requireText("X - Go Back, G - Go to payment, P - Pause, U - Unpause request, E - Change Expiry V - View Request List, C - Cancel");
+            String select = system.validate().requireText("                                        X - Go Back, G - Go to payment, P - Pause, U - Unpause request, E - Change Expiry V - View Request List, C - Cancel");
 
             switch(select) {
 
@@ -129,13 +143,15 @@ public class Cashier extends Employee
                 // Pause
                 case "P": case "p":
                 if (cashierQ.isEmpty()){
-                    System.out.println("No items in queue");
+                    System.out.println("                                        \u001B[31mNo items in queue\u001B[0m");
                     break;
                 }
 
-                if (!system.validate().confirm("Are you sure you want to pause Request: " + cashierQ.peek().getId())) break;
+                if (!system.validate().confirm("                                        Are you sure you want to pause Request: " + cashierQ.peek().getId())) break;
                 qm.pause(system.genDate());
-                System.out.println("Request paused");
+                System.out.println("                                                                  ╔════════════════════════════════════════════════════════════════════╗");
+                System.out.println("                                                                  ║                            \u001B[32mRequest paused\u001B[0m                          ║");
+                System.out.println("                                                                  ╚════════════════════════════════════════════════════════════════════╝");
                 break;
 
                 // Unpause
@@ -156,21 +172,26 @@ public class Cashier extends Employee
                 // Cancel
                 case "C": case "c":
                 if (cashierQ.isEmpty()) {
-                    System.out.println("No items in queue");
+                    System.out.println("                                        \u001B[31mNo items in queue\u001B[0m");
                     return;
                 }
 
-                if (!system.validate().confirm("Are you sure you want to cancel Request: " + cashierQ.peek().getId())) break;
+                if (!system.validate().confirm("                                        Are you sure you want to cancel Request: " + cashierQ.peek().getId())) break;
                 qm.dequeue("Cancelled", "CASHIER", system.genDate(), cashierQ);
-                System.out.println("Current request cancelled");
+                System.out.println("                                                                  ╔════════════════════════════════════════════════════════════════════╗");
+                System.out.println("                                                                  ║                       \u001B[32mCurrent request cancelled\u001B[0m                    ║");
+                System.out.println("                                                                  ╚════════════════════════════════════════════════════════════════════╝");
+                System.out.println("");
                 break;
 
                 // Back
                 case "X": case "x":
+                System.out.println("\n                                        \u001B[32m- Returning...\u001B[0m");
+                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
                 return;
 
                 default:
-                System.out.println("Invalid Selection");
+                System.out.println("                                        \u001B[31m- Invalid Selection\u001B[0m");
                 break;
             }
 
@@ -183,78 +204,94 @@ public class Cashier extends Employee
         while (true) {
 
             if (index == 0 && cashierQ.isEmpty()) {
-                System.out.println("No pending Requests");
+                System.out.println("                                        \u001B[31m- No pending Requests\u001B[0m");
                 break;
             }
             if (index == 0) cur = cashierQ.peek();
 
-            System.out.println("== Confirm Payment ==");
+            ShowCashierMenuDisplay.ConfirmPaymentDisplay();
+            System.out.println("");
             Cashier.Reciept rc = new Reciept(cur, false, false);
 
             double payment = 0;
             while (true) {
-                payment = system.validate().requireDouble("Input payment ('x' to go back)");
+                payment = system.validate().requireDouble("                                        Input payment ('x' to go back)");
                 if (payment == -7) return;
 
                 if (Double.parseDouble(cur.getPrice()) > payment) {
-                    System.out.println("Insufficient Payment");
+                    System.out.println("                                        \u001B[31mInsufficient Payment\u001B[0m");
                     continue;
                 }
 
-                if (!system.validate().confirm("Confirm payment? ")) continue;
+                if (!system.validate().confirm("                                        Confirm payment? ")) continue;
                 break;
             }
 
             if (index == 0) qm.moveToWindow("Paid", "ACCOUNTING", system.genDate(), cashierQ, QueueSystem.getAccountQ(), system.genDate(1));
             else  qm.moveToWindow("Paid", "ACCOUNTING", system.genDate(), pauseQ, QueueSystem.getAccountQ(), index - 1, system.genDate(1));
             
-            System.out.println("Successfully paid, pending approval.");
+            System.out.println("                                                                  ╔════════════════════════════════════════════════════════════════════╗");
+            System.out.println("                                                                  ║                 \u001B[32mSuccessfully paid, pending approval\u001B[0m                ║");
+            System.out.println("                                                                  ╚════════════════════════════════════════════════════════════════════╝");
+            System.out.println("");
+            
+
             Cashier.Reciept rec = new Reciept(cur, String.valueOf(payment), false);
-            System.out.println("     ╚═════════════════════════════════════════════════════════════╝");
+
+            System.out.println("                                                                       ╚═════════════════════════════════════════════════════════════╝");
+
             rec.appendReci(cur, String.valueOf(payment));
-            if (!system.validate().confirm("Load next? ")) return;
+            if (!system.validate().confirm("                                        Load next? ")) return;
             index = 0;
         }
     }
 
     private void unpause() {
         while (true) {
-            System.out.println("----  PAUSED  ----");
+            ShowEmployeeDisplay.PausedRequestsDisplay();
+            System.out.println("");
             if (!qm.loadViewQueue(pauseQ, false, true, false, 0)) {
-                System.out.println("No paused payments.");
+                System.out.println("                                        \u001B[31mNo paused payments\u001B[0m");
                 return;
             }
 
             int length = pauseQ.size();
 
-            int select2 = system.validate().minMaxXChoice("Type the index of the paused request you want to select, (x to go back)", 1, length); //TODO: confirm selected
+            int select2 = system.validate().minMaxXChoice("                                        Type the index of the paused request you want to select, (x to go back)", 1, length); //TODO: confirm selected
             if (select2 == -1) {
                 break;
             }
 
             while (true) {
-                String select3 = system.validate().requireText("G - Go to payment, C - Cancel, X - Go back");
+                String select3 = system.validate().requireText("                                        G - Go to payment, C - Cancel, X - Go back");
 
                 switch (select3) {
                     case "C", "c" -> {
-                        if (!system.validate().confirm("Are you sure ?")) break;
+                        if (!system.validate().confirm("                                        Are you sure ?")) break;
                         qm.dequeue("Cancelled", "CASHIER", system.genDate(), pauseQ, (select2 - 1));
-                        System.out.println("Succesfully unpaused request");
+                        
+                        System.out.println("                                                                  ╔════════════════════════════════════════════════════════════════════╗");
+                        System.out.println("                                                                  ║                      \u001B[32mSelected request cancelled\u001B[0m                      ║");
+                        System.out.println("                                                                  ╚════════════════════════════════════════════════════════════════════╝");
                         break;
                     }
 
                     case "G", "g" -> {
-                        if (!system.validate().confirm("Are you sure ?")) break;
+                        if (!system.validate().confirm("                                        Are you sure ?")) break;
+                        System.out.println("\n                                        \u001B[32m- Succesfully unpaused request\u001B[0m");
+                        System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
                         paid(pauseQ.get((select2 - 1)), select2);
                         break;
                     }
 
                     case "X", "x" -> {
+                        System.out.println("\n                                        \u001B[32m- Returning...\u001B[0m");
+                        System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
                         break;
                     }
 
                     default -> {
-                        System.out.println("Pick an option among the ones given");
+                        System.out.println("                                        \u001B[31mPick an option among the ones given\u001B[0m");
                         continue;
                     }
                 }
@@ -276,10 +313,10 @@ public class Cashier extends Employee
         r.display(list, 1, i);
 
         while (true) {
-            int input = system.validate().minMaxXChoice("Go to page ('x' to go back):", 1, i);
+            int input = system.validate().minMaxXChoice("                                        Go to page ('x' to go back):", 1, i);
 
             if (input == current) {
-                System.out.println("Already on page " + input);
+                System.out.println("                                        Already on page " + input);
                 continue;
             }
             if (input == -1) {
@@ -303,18 +340,18 @@ public class Cashier extends Employee
 
         // Total, not final output
         public Reciept(QueueRequest request, boolean hasBefore, boolean hasAfter) {
-            if (hasBefore) System.out.println("     ╠═════════════════════════════════════════════════════════════╣");
-            else System.out.println    ("     ╔═════════════════════════════════════════════════════════════╗");
+            if (hasBefore) System.out.println("                                                                       ╠═════════════════════════════════════════════════════════════╣");
+            else System.out.println    ("                                                                       ╔═════════════════════════════════════════════════════════════╗");
 
-            System.out.printf("     ║  Request Number: %-10s           %20s  ║%n", request.getId(), request.getDate());
-            System.out.println    ("     ║─────────────────────────────────────────────────────────────║");
-            System.out.println    ("     ║  Document                       Fee                         ║");
+            System.out.printf("                                                                       ║  Request Number: %-10s           %20s  ║%n", request.getId(), request.getDate());
+            System.out.println    ("                                                                       ║─────────────────────────────────────────────────────────────║");
+            System.out.println    ("                                                                       ║  Document                       Fee                         ║");
 
             String price = String.format("Php %.2f", Double.valueOf(request.getPrice()));
-            System.out.printf("     ║  %-30s %-20s        ║%n", request.getDocument(), price);
+            System.out.printf("                                                                       ║  %-30s %-20s        ║%n", request.getDocument(), price);
 
-            if (hasAfter) System.out.println("     ╟-------------------------------------------------------------╢");
-            else System.out.println("     ╚═════════════════════════════════════════════════════════════╝");
+            if (hasAfter) System.out.println("                                                                       ╟-------------------------------------------------------------╢");
+            else System.out.println         ("                                                                       ╚═════════════════════════════════════════════════════════════╝");
         }
 
         // Final Reciept
@@ -323,8 +360,8 @@ public class Cashier extends Employee
 
             String paid = String.format("Php %.2f", Double.valueOf(payment));
             String change = String.format("Php %.2f", (Double.parseDouble(payment) - Double.parseDouble(request.getPrice())));
-            System.out.println    ("     ║       m                                                     ║");
-            System.out.printf("     ║  %-30s %-25s   ║%n", "Paid: " + paid, "Change: " + change);
+            System.out.println    ("                                                                       ║                                                             ║");
+            System.out.printf("                                                                       ║  %-30s %-25s   ║%n", "Paid: " + paid, "Change: " + change);
 
         }
 
@@ -348,7 +385,7 @@ public class Cashier extends Employee
                     items++;
                     if (items < (page - 1) * 5) continue;
                     else if (items > page * 5) {
-                        System.out.println("     ╚═════════════════════════════════════════════════════════════╝");
+                        System.out.println("                                                                       ╚═════════════════════════════════════════════════════════════╝");
                         break;
                     }
 
@@ -358,13 +395,15 @@ public class Cashier extends Employee
                     Reciept r = new Reciept(request, parts[7], hasBefore);
                     hasBefore = true;
                 }
-                if (read.size() == items) System.out.println("     ╚═════════════════════════════════════════════════════════════╝");
+                if (read.size() == items) System.out.println("                                                                       ╚═════════════════════════════════════════════════════════════╝");
             }
 
+            System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
+
             if (maxPage == 1) {
-                System.out.println(" Viewing page " + page);
+                System.out.println("                                        Viewing page " + page);
             } else {
-                System.out.println(" Viewing page " + page + " out of " + maxPage);
+                System.out.println("                                        Viewing page " + page + " out of " + maxPage);
             }
         }
 
