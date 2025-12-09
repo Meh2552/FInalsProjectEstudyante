@@ -25,47 +25,101 @@ public abstract class Employee extends User
         employeeMenu();
     }
     
-    public void respondToTicket()
+    public void respondToTicketWindow()
     {
         List<HelpdeskTicket> tickets = system.helpdeskManager().loadTickets();
-        if (tickets.size() == 0)
+        List<HelpdeskResponse> responses = system.helpdeskResponseManager().loadAll();
+
+
+        String roleStr = record.getRole().toString();
+        String myWindow = roleStr;  
+
+        ArrayList<HelpdeskTicket> myTickets = new ArrayList<>();
+        for (HelpdeskTicket t : tickets)
         {
-            System.out.println("No tickets.");
+            String assigned = t.getAssignedWindow();
+            if (assigned != null && assigned.equalsIgnoreCase(myWindow))
+            {
+                myTickets.add(t);
+            }
+        }
+
+        if (myTickets.isEmpty())
+        {
+            System.out.println("No tickets endorsed to your window.");
             return;
         }
 
         while (true)
         {
-            System.out.println("=== HELPDESK QUEUE ===");
-            for (int i=0;i<tickets.size();i++)
+            System.out.println(" ".repeat(27) +"=== ENDORSED TICKETS FOR " + myWindow + " ===");
+
+            System.out.printf(" ".repeat(27) +"╔" + "═".repeat(134) + "╗%n");
+
+            System.out.printf(
+            		" ".repeat(27) +"║ %-4s ║ %-8s ║ %-14s ║ %-30s ║ %-16s ║ %-18s ║ %-24s ║%n",
+                "No.", "TicketID", "Student", "Issue", "Window", "Last Modified", "Status"
+            );
+
+            System.out.printf(" ".repeat(27) +"║" + "─".repeat(134) + "║%n");
+
+            int idx = 1;
+            for (HelpdeskTicket t : myTickets)
             {
-                HelpdeskTicket t = tickets.get(i);
-                String assigned = (t.getAssignedWindow() == null || t.getAssignedWindow().isEmpty()) ? "" : " | Assigned: " + t.getAssignedWindow();
-                System.out.println("[" + (i+1) + "] ID:" + t.getId() + " (" + t.getStudentNum() + ") " + t.getIssue() + " | " + t.getDate() + " | Status: " + t.getStatus() + assigned);
+                String window = t.getAssignedWindow();
+                if (window == null) window = "";
+
+                String lastModified = t.getDate();
+                if (lastModified == null) lastModified = "";
+
+                System.out.printf(
+                		" ".repeat(27) +"║ %-4d ║ %-8d ║ %-14s ║ %-30s ║ %-16s ║ %-18s ║ %-24s ║%n",
+                    idx, t.getId(), t.getStudentNum(), t.getIssue(), window, lastModified, t.getStatus()
+                );
+                idx++;
             }
 
-            int sel = system.validate().menuChoice("Select ticket: ", tickets.size());
-            String action = system.validate().editCancelContinue();
-            if (action.equals("EDIT")) continue;
-            if (action.equals("CANCEL")) return;
+            System.out.printf(" ".repeat(27) +"╚" + "═".repeat(134) + "╝%n");
 
-            HelpdeskTicket chosen = tickets.get(sel - 1);
+            int choose = system.validate().minMaxXChoice(" ".repeat(27) +"Select ticket (X to go back): ", 1 , myTickets.size()
+            );
 
-            System.out.println("Selected Ticket ID:" + chosen.getId() + " Issue: " + chosen.getIssue());
-            String respMsg = system.validate().requireText("Type your response message: ");
-            String ts = system.genDate();
-            String responderName = record.getFullName();
-            HelpdeskResponse resp = new HelpdeskResponse(chosen.getId(), responderName, respMsg, ts);
-            system.helpdeskResponseManager().addResponse(resp);
+            if (choose == -1) return;
 
-            chosen.setStatus("Answered");
-            system.helpdeskManager().saveTickets(tickets);
+            HelpdeskTicket selected = myTickets.get(choose - 1);
 
-            System.out.println("=== RESPONSE CONFIRMED ===");
-            System.out.println("You replied at: " + ts);
-            System.out.println("Message: " + respMsg);
-            System.out.println("-".repeat(50));
-            return;
+            System.out.println(" ".repeat(27) +"[1] Reply to Ticket");
+            System.out.println(" ".repeat(27) +"[x] Go Back");
+
+            String choice = system.validate().requireText(" ".repeat(27) +"Choose: ");
+            if (choice.equalsIgnoreCase("x")) 
+            {
+                return;  
+            }
+            
+            else if (choice.equals("1"))
+            {
+                String msg = system.validate().requireText(" ".repeat(27) +"Enter your reply (or x to go back): ");
+                if (msg.equalsIgnoreCase("x")) {
+                    continue;  
+                }
+                
+                String ts = system.genDate();
+
+                HelpdeskResponse resp =
+                    new HelpdeskResponse(selected.getId(), record.getFullName(), msg, ts);
+
+                system.helpdeskResponseManager().addResponse(resp);
+
+                selected.setStatus("Answered");
+                system.helpdeskManager().saveTickets(tickets);
+                
+                System.out.println("Reply saved.");
+            }
+            else 
+            {
+                System.out.println("Invalid choice. Please enter 1 or x.");
+            }
         }
     }
 
@@ -80,34 +134,69 @@ public abstract class Employee extends User
             return;
         }
 
+        System.out.println("=== YOUR HELP DESK RESPONSE HISTORY ===");
+        for (HelpdeskResponse r : list)
+        {
+            HelpdeskTicket ticket = system.helpdeskManager().loadById(r.getTicketId());
+            String ratingStr;
+            if (r.getRating() == -1) {
+                ratingStr = "Not rated";
+            } else {
+                ratingStr = String.valueOf(r.getRating());
+            }
+            
+            System.out.printf("╔" + "═".repeat(71) + "╗%n");
+            System.out.printf("║ Ticket ID: %-58s ║\n", r.getTicketId());;
+            System.out.printf("║ Responder: %-58s ║\n", r.getRespond() + " (" + r.getTime() + ")");
+            System.out.printf("║ Message: %-60s ║\n", r.getMessage());
+            System.out.printf("║ Rating: %-61s ║\n", ratingStr);
+            System.out.printf("╚" + "═".repeat(71) + "╝%n");
+        }
+
         while (true)
         {
-            System.out.println("=== YOUR HELP DESK RESPONSE HISTORY ===");
-            System.out.println("[1] Sort by time (oldest first)");
-            System.out.println("[2] Sort by time (newest first)");
-            System.out.println("[3] Back");
-            int choice = system.validate().menuChoice("Choose: ", 3);
+            System.out.println("\n=== SORT OPTIONS ===");
+            System.out.println("[1] Sort by time (newest first)");
+            System.out.println("[2] Sort by time (older first)");
+            System.out.println("[X] Go back");
+            String choice = system.validate().requireText("Choose: ");
             
-            if (choice == 3) return;
-
-            if (choice == 1)
+            if (choice.equalsIgnoreCase("X")) return;
+            
+            if (choice.equals("1"))
             {
                 Collections.sort(list, (a,b) -> a.getTime().compareTo(b.getTime()));
             }
-            else
+            
+            else if (choice.equals("2"))
             {
                 Collections.sort(list, (a,b) -> b.getTime().compareTo(a.getTime()));
             }
-
+            
+            else
+            {
+                System.out.println("Please input only 1, 2, or X.");
+                continue;
+            }
+                                                                    
+            System.out.println("=== YOUR HELP DESK RESPONSE HISTORY (Sorted) ===");
             for (HelpdeskResponse r : list)
             {
-                System.out.println("-".repeat(50));
-                System.out.println("Ticket ID: " + r.getTicketId());
-                System.out.println("Date: " + r.getTime());
-                System.out.println("Responder: " + r.getRespond());
-                System.out.println("Rating: " + (r.getRating() >= 1 ? r.getRating() : "Unrated"));
-                System.out.println("Message:");
-                System.out.println("  " + r.getMessage());
+                HelpdeskTicket ticket = system.helpdeskManager().loadById(r.getTicketId());
+                String ratingStr;
+                if (r.getRating() == -1) {
+                    ratingStr = "Not rated";
+                } else {
+                    ratingStr = String.valueOf(r.getRating());
+                }
+                
+                System.out.printf("╔" + "═".repeat(71) + "╗%n");
+                System.out.printf("║ Ticket ID: %-58s ║\n", r.getTicketId());
+
+                System.out.printf("║ Responder: %-58s ║\n", r.getRespond() + " (" + r.getTime() + ")");
+                System.out.printf("║ Message: %-60s ║\n", r.getMessage());
+                System.out.printf("║ Rating: %-61s ║\n", ratingStr);
+                System.out.printf("╚" + "═".repeat(71) + "╝%n");            
             }
         }
     }

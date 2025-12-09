@@ -20,6 +20,22 @@ public class HelpdeskManager extends DocuHandler
     {
         append(ticket.toFileLine());
     }
+    
+    public HelpdeskTicket loadById(int ticketId)
+    {
+        List<String> lines = read();
+        for (String l : lines)
+        {
+            HelpdeskTicket ticket = HelpdeskTicket.fromLine(l);
+            
+            if (ticket != null && ticket.getId() == ticketId) 
+            {
+            	return ticket;
+            }
+        }
+        
+        return null;
+    }
 
     public List<HelpdeskTicket> loadTickets()
     {
@@ -110,5 +126,6 @@ public class HelpdeskManager extends DocuHandler
         }
         return found;
     }
+
 
 }

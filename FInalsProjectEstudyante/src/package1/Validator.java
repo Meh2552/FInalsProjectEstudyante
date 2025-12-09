@@ -146,7 +146,7 @@ public class Validator
     {
         while (true) 
         {
-            System.out.print("PRESS [E]dit [C]ancel [N]ext: ");
+            System.out.print(" ".repeat(40) +"PRESS [E]dit [C]ancel [N]ext: ");
             String s = system.scan().nextLine().trim();
             
             if (s.equalsIgnoreCase("e"))

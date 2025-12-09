@@ -1,6 +1,5 @@
 package package1;
 
-import displays.*;
 import java.util.*;
 
 public class Registrar extends Employee 
@@ -26,60 +25,50 @@ public class Registrar extends Employee
         while (true) 
         {
             qm.expire(system.genDate());
-
-            ShowRegistrarMenuDisplay.RegistrarMenuDisplay();
-            System.out.println("");
+            System.out.println("=== REGISTRAR MENU ===");
+            System.out.println("[1] View Requests");
+            System.out.println("[2] Create Request");
+            System.out.println("[3] Manage Requests");
+            System.out.println("[4] Respond to Helpdesk");
+            System.out.println("[5] View Helpdesk Responses");
+            System.out.println("[6] See History");
+            System.out.println("[7] Logout");
+            
             int choice = system.validate().menuChoice("Choose: ", 7);
             
             if (choice == 1)
             {
-                System.out.println("\n                                        \u001B[32m- Loading requests\u001B[0m");
-                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
             	displayRequest();
             }
             
             else if (choice == 2)
             {
-                System.out.println("\n                                        \u001B[32m- Going to create request menu\u001B[0m");
-                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
             	createRequest();
             }
 
             else if (choice == 3)
             {
-                System.out.println("\n                                        \u001B[32m- Going to request manager\u001B[0m");
-                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
             	requestManager();
             }
             
             else if (choice == 4)
             {
-                System.out.println("\n                                        \u001B[32m- Going to helpdesk\u001B[0m");
-                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
-                respondToTicket();
+            	respondToTicketWindow();
             }
             
             else if (choice == 5)
             {
-                System.out.println("\n                                        \u001B[32m- Loading ticket responses\u001B[0m");
-                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
-                viewResponse();
+            	viewResponse();
             }
             
             else if (choice == 6)
             {
-            System.out.println("\n                                        \u001B[32m- Loading accounting history\u001B[0m");
-            System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
-            ShowRegistrarMenuDisplay.RegistrarHistoryDisplay();
-
             ArrayList<String> historyTag = new ArrayList<>();
             historyTag.add("ACCOUNTING");
             historyTag.add("Approved");
             history(1, historyTag, false);
             }
             else if (choice == 7) {
-                System.out.println("\n                                        \u001B[32m- Returning...\u001B[0m");
-                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
                 return;
             }
         }
@@ -88,16 +77,16 @@ public class Registrar extends Employee
     @Override
     public void displayRequest() {
 
-        ShowRegistrarMenuDisplay.OngoingRequestsDisplay();
+        System.out.println("----  ONGOING REQUESTS  ----");
         if (!qm.loadViewQueue(regQ, false, false, false, 0)) {
-            System.out.println("                                        \u001B[31mNo ongoing requests\u001B[0m");
+            System.out.println("No ongoing requests.");
         }
 
     }
 
     private void currentDisplay(int index) {
 
-        ShowEmployeeDisplay.CurrentRequestsDisplay();
+        System.out.println("===== Current =====");
         qm.loadViewQueue(regQ.get(index), true);
 
     }
@@ -107,7 +96,7 @@ public class Registrar extends Employee
         while (true) {
 
             if (regQ.isEmpty()) {
-                System.out.println("                                        \u001B[31mNo items in queue\u001B[0m");
+                System.out.println("No items in queue");
                 return;
             }
             
@@ -117,8 +106,7 @@ public class Registrar extends Employee
 
             while (true) {
             currentDisplay(index);
-            ShowRegistrarMenuDisplay.RegistrarRequestManagerDisplay();
-            String select = system.validate().requireText("Choose: ");
+            String select = system.validate().requireText("X - Go Back, U - Update State, F - Finish Request, S - Send To Window, E - Change Expiry, C - Cancel, V - View Requests");
 
             switch(select) {
 
@@ -141,18 +129,14 @@ public class Registrar extends Employee
                 case "F": case "f":
                 if (!system.validate().confirm("Finishing a request will remove it, finish request? " + regQ.get(index).getId())) continue;
                 qm.dequeue("Completed", "REGISTRAR", system.genDate(), regQ, index);
-                System.out.println("                                                                  ╔════════════════════════════════════════════════════════════════════╗");
-                System.out.println("                                                                  ║                           \u001B[32mRequest resolved\u001B[0m                         ║");
-                System.out.println("                                                                  ╚════════════════════════════════════════════════════════════════════╝");
+                System.out.println("Request resolved");
                 break;
 
                 // Cancel
                 case "C": case "c":
                 if (!system.validate().confirm("Are you sure you want to cancel Request: " + regQ.get(index).getId())) continue;
                 qm.dequeue("Cancelled", "REGISTRAR", system.genDate(), regQ, index);
-                System.out.println("                                                                  ╔════════════════════════════════════════════════════════════════════╗");
-                System.out.println("                                                                  ║                           \u001B[32mRequest cancelled\u001B[0m                        ║");
-                System.out.println("                                                                  ╚════════════════════════════════════════════════════════════════════╝");
+                System.out.println("Cancelled successfully");
                 break;
 
                 // View Requests
@@ -162,12 +146,10 @@ public class Registrar extends Employee
 
                 // Back
                 case "X": case "x":
-                System.out.println("\n                                        \u001B[32m- Returning...\u001B[0m");
-                System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
                 break;
 
                 default:
-                System.out.println("                                        \u001B[31mInvalid Selection\u001B[0m");
+                System.out.println("Invalid Selection");
                 continue;
 
             }
@@ -185,12 +167,12 @@ public class Registrar extends Employee
 
         int select = 0;
         while (true) { 
-            select = system.validate().minMaxXChoice("                                        Type the index of the request you want to select, (x to go back)", 1, regQ.size());
+            select = system.validate().minMaxXChoice("Type the index of the request you want to select, (x to go back)", 1, regQ.size());
             if (select == -1) {
                 return -1;
             }
 
-            if (system.validate().confirm("                                        Are you sure you want to select Request: " + regQ.get(select - 1).getId())) break;
+            if (system.validate().confirm("Are you sure you want to select Request: " + regQ.get(select - 1).getId())) break;
             
         }
 
@@ -202,7 +184,7 @@ public class Registrar extends Employee
             int expiry = 0;
             currentDisplay(index);
 
-            String select = system.validate().requireText("                                        X - Go Back, P - Processing, R - Release, U - Ready for Pick-Up, Type for custom");
+            String select = system.validate().requireText("X - Go Back, P - Processing, R - Release, U - Ready for Pick-Up, Type for custom");
 
             switch(select) {
 
@@ -211,11 +193,9 @@ public class Registrar extends Employee
                 expiry = requireExpiry();
                 if (expiry == -7) continue;
 
-                if (!system.validate().confirm("                                        Mark Request " + regQ.get(index).getId() + " as 'Processing' ")) continue;
+                if (!system.validate().confirm("Mark Request " + regQ.get(index).getId() + " as 'Processing' ")) continue;
                 qm.moveToWindow("Processing", "REGISTRAR", system.genDate(), regQ, regQ, index, system.genDate(expiry));
-                System.out.println("                                                                  ╔════════════════════════════════════════════════════════════════════╗");
-                System.out.println("                                                                  ║                  \u001B[32mSuccessfully marked for processing\u001B[0m                ║");
-                System.out.println("                                                                  ╚════════════════════════════════════════════════════════════════════╝");
+                System.out.println("Successfully marked for processing");
                 break;
 
                 // Mark for Release
@@ -223,11 +203,9 @@ public class Registrar extends Employee
                 expiry = requireExpiry();
                 if (expiry == -7) continue; 
 
-                if (!system.validate().confirm("                                        Mark Request " + regQ.get(index).getId() + " as 'Released' ")) continue;
+                if (!system.validate().confirm("Mark Request " + regQ.get(index).getId() + " as 'Released' ")) continue;
                 qm.moveToWindow("Released", "REGISTRAR", system.genDate(), regQ, regQ, index, system.genDate(expiry));
-                System.out.println("                                                                  ╔════════════════════════════════════════════════════════════════════╗");
-                System.out.println("                                                                  ║                           \u001B[32mRequest released\u001B[0m                         ║");
-                System.out.println("                                                                  ╚════════════════════════════════════════════════════════════════════╝");
+                System.out.println("Request released");
                 break;
 
                 // Mark for Pick-Up
@@ -235,11 +213,9 @@ public class Registrar extends Employee
                 expiry = requireExpiry();
                 if (expiry == -7) continue;
 
-                if (!system.validate().confirm("                                        Mark Request " + regQ.get(index).getId() + " as 'Ready for Pick-Up' ")) continue;
+                if (!system.validate().confirm("Mark Request " + regQ.get(index).getId() + " as 'Ready for Pick-Up' ")) continue;
                 qm.moveToWindow("Ready for Pick-Up", "REGISTRAR", system.genDate(), regQ, regQ, index, system.genDate(expiry));
-                System.out.println("                                                                  ╔════════════════════════════════════════════════════════════════════╗");
-                System.out.println("                                                                  ║                    \u001B[32mSucessfully marked for pick-up\u001B[0m                  ║");
-                System.out.println("                                                                  ╚════════════════════════════════════════════════════════════════════╝");
+                System.out.println("Sucessfully marked for pick-up");
                 break;
 
                 // Back
@@ -250,11 +226,9 @@ public class Registrar extends Employee
                 expiry = requireExpiry();
                 if (expiry == -7) continue;
 
-                if (!system.validate().confirm("                                        Mark Request " + regQ.get(index).getId() + " as '" + select + "'")) continue;
+                if (!system.validate().confirm("Mark Request " + regQ.get(index).getId() + " as '" + select + "'")) continue;
                 qm.moveToWindow(select, "REGISTRAR", system.genDate(), regQ, regQ, index, system.genDate(expiry));
-                System.out.println("                                                                  ╔════════════════════════════════════════════════════════════════════╗");
-                System.out.printf("                                                                  ║                 \u001B[32mRequest marked as %-20s\u001B[0m             ║%n", select);
-                System.out.println("                                                                  ╚════════════════════════════════════════════════════════════════════╝");
+                System.out.println("Request marked as " + select);
                 break;
 
             }
@@ -267,9 +241,12 @@ public class Registrar extends Employee
     private void sendToWindow(int index) {
         while (true) { 
 
-            ShowRegistrarMenuDisplay.SendWindowAccountingDisplay();
+            System.out.println("----  Send to Window  ----");
+            System.out.println("[1] Cashier");
+            System.out.println("[2] Accounting");
+            System.out.println("[X] Back");
 
-            int input = system.validate().minMaxXChoice("                                        Choose which window", 1, 2);
+            int input = system.validate().minMaxXChoice("Choose which window", 1, 2);
             QueueRequest request = regQ.get(index);
 
             switch(input) {
@@ -297,8 +274,7 @@ public class Registrar extends Employee
 
     private void cashierSendTo(QueueRequest request) {
 
-        System.out.println("\n                                        \u001B[32m- Cashier Selected\u001B[0m");
-        System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
+        System.out.println("- Cashier Selected \n");
         String state = "";
         double price = 0;
         int expiry = 0;
@@ -310,21 +286,21 @@ public class Registrar extends Employee
 
                 // State
                 case 1:
-                state = system.validate().requireText("                                        Enter request state (X to go back)");
+                state = system.validate().requireText("Enter request state (X to go back)");
                 if (state.matches("[Xx]")) return;
                 step++;
                 continue;
 
                 // Price
                 case 2:
-                price = system.validate().requireDouble("                                        Input payment (X to go back)");
+                price = system.validate().requireDouble("Input payment (X to go back)");
                 if (price == -7) {
                     step--;
                     continue;
                 }
 
                 else if (price <= 0) {
-                    System.out.println("                                        \u001B[31mInvalid price\u001B[0m");
+                    System.out.println("Invalid price");
                 }
                 step++;
                 continue;
@@ -368,16 +344,13 @@ public class Registrar extends Employee
         request.setPricee(String.valueOf(price));
 
         qm.moveToWindow(state, "CASHIER", system.genDate(), regQ, QueueSystem.getCashierQ(), regQ.indexOf(request), system.genDate(expiry));
-        System.out.println("                                                                  ╔════════════════════════════════════════════════════════════════════╗");
-        System.out.println("                                                                  ║                       \u001B[32mRequest sent to cashier\u001B[0m                      ║");
-        System.out.println("                                                                  ╚════════════════════════════════════════════════════════════════════╝");
+        System.out.println("Request sent to cashier");
         
     }
 
     private void accountingSendTo(QueueRequest request) {
 
-        System.out.println("\n                                        \u001B[32m- Accounting Selected\u001B[0m");
-        System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
+        System.out.println("- Accounting Selected \n");
         String state = "";
         int expiry = 0;
 
@@ -388,7 +361,7 @@ public class Registrar extends Employee
 
                 // State
                 case 1:
-                state = system.validate().requireText("                                        Enter request state (X to go back)");
+                state = system.validate().requireText("Enter request state (X to go back)");
                 if (state.matches("[Xx]")) return;
                 step++;
                 continue;
@@ -430,9 +403,7 @@ public class Registrar extends Employee
         }
 
         qm.moveToWindow(state, "ACCOUNTING", system.genDate(), regQ, QueueSystem.getAccountQ(), regQ.indexOf(request), system.genDate(expiry));
-        System.out.println("                                                                  ╔════════════════════════════════════════════════════════════════════╗");
-        System.out.println("                                                                  ║                      \u001B[32mRequest sent to accounting\u001B[0m                    ║");
-        System.out.println("                                                                  ╚════════════════════════════════════════════════════════════════════╝");
+        System.out.println("Request sent to accounting");
 
     }
 

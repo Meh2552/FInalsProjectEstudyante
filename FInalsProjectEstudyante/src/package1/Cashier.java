@@ -57,7 +57,7 @@ public class Cashier extends Employee
             {
                 System.out.println("\n                                        \u001B[32m- Going to helpdesk\u001B[0m");
                 System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
-            	respondToTicket();
+            	respondToTicketWindow();
             }   
 
             else if (choice == 5)

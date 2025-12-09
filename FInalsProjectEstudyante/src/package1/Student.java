@@ -274,7 +274,7 @@ public class Student extends User
         hm.addTicket(t);
 
         System.out.println("                                                                  ╔════════════════════════════════════════════════════════════════════╗");
-        System.out.printf("                                                                  ║             \u001B[32mHelpdesk ticket created. Ticket ID: %04d!\u001B[0m             ║%n", id);
+        System.out.printf("                                                                  ║             \u001B[32mHelpdesk ticket created. Ticket ID: %04d!\u001B[0m              ║%n", id);
         System.out.println("                                                                  ╚════════════════════════════════════════════════════════════════════╝");
                                                 
     }
@@ -299,103 +299,169 @@ public class Student extends User
             return;
         }
 
-        ShowStudentMenuDisplay.helpdeskRepliesDisplay();
+       
+        while (true) 
+        {
+        	ShowStudentMenuDisplay.helpdeskRepliesDisplay();
 
-        System.out.printf("%-4s | %-8s | %-14s | %-30s | %-16s | %-18s | %-12s%n", 
-                "No.", "TicketID", "Student", "Issue", "Window", "Last Modified", "Status");
-            System.out.println("-------------------------------------------------------------------------------------------------------------------------------------");
+            System.out.printf(" ".repeat(41) +"╔" + "═".repeat(121) + "╗%n");
 
+            System.out.printf(" ".repeat(41) +"║ %-4s ║ %-8s ║ %-14s ║ %-30s ║ %-24s ║ %-24s ║%n",
+                "No.", "TicketID", "Student", "Issue", "Last Modified", "Status");
+
+            System.out.printf(" ".repeat(41) +"║" + "─".repeat(121) + "║%n");
+            
             int idx = 1;
             
-            for (HelpdeskTicket t : tickets)
+            for (HelpdeskTicket t : myTickets)  
             {
-                String window = t.getAssignedWindow();
-                
-                if (window == null || window.isEmpty())
-                {
-                    window = "";
-                }
-
                 String lastModified = t.getDate();
                 if (lastModified == null)
                 {
-                	lastModified = "";
+                    lastModified = " ";
                 }
-                System.out.printf("%-4d | %-8d | %-14s | %-30s | %-16s | %-12s | %-12s%n", idx, t.getId(), t.getStudentNum(), t.getIssue(), window, lastModified, t.getStatus());
-                
+                System.out.printf(" ".repeat(41) +"║ %-4d ║ %-8d ║ %-14s ║ %-30s ║ %-24s ║ %-24s ║%n", idx, t.getId(), t.getStudentNum(), t.getIssue(), lastModified, t.getStatus());
                 idx++;
             }
 
-        int choose = system.validate().minMaxXChoice("                                        Select ticket to view (X to go back): ", 1, myTickets.size());
-        if (choose == -1) return;
+            System.out.printf(" ".repeat(41) +"╚" + "═".repeat(121) + "╝%n");
+            
+            int choose = system.validate().minMaxXChoice(" ".repeat(41) +"Select ticket to view (X to go back): ", 1, myTickets.size());
 
-        HelpdeskTicket selected = myTickets.get(choose - 1);
+            if (choose == -1) return;
 
-
-        ArrayList<HelpdeskResponse> respList = new ArrayList<>();
-        System.out.println("\n--- RESPONSES ---");
-        for (HelpdeskResponse r : responses) 
-        {
-            if (r.getTicketId() == selected.getId()) 
+            HelpdeskTicket selected = myTickets.get(choose - 1);   
+        
+            while (true)  
             {
-                respList.add(r);
-                System.out.println("From: " + r.getRespond() + " (" + r.getTime() + ")");
-                System.out.println(" -> " + r.getMessage());
-                
-                if (r.getRating() > 0) 
+                ArrayList<HelpdeskResponse> respList = new ArrayList<>();
+           
+                System.out.println("\n " + " ".repeat(69) +"--- RESPONSES ---"); // need i box
+           
+                for (HelpdeskResponse r : responses) 
                 {
-                    System.out.println(" Rating: " + r.getRating());
-                } 
-                else 
-                {
-                    System.out.println(" Rating: Not yet rated");
+                    if (r.getTicketId() == selected.getId()) 
+                    {
+                        respList.add(r);
+
+                        System.out.println(" ".repeat(69) +"╔" + "═".repeat(61) + "╗");
+                        System.out.printf(" ".repeat(69) +"║  Ticket ID: %-4d                       %-15s   ║%n", selected.getId(), r.getTime());
+                        System.out.println(" ".repeat(69) +"║" + "─".repeat(61) + "║");
+                        System.out.println(" ".repeat(69) +"║" + " ".repeat(61) + "║");
+                        System.out.printf(" ".repeat(69) +"║  From: %-51s  ║%n", r.getRespond());
+                        System.out.printf(" ".repeat(69) +"║  Message: %-48s  ║%n", r.getMessage());
+                        
+                        if (r.getRating() > 0) 
+                        {
+                            System.out.printf(" ".repeat(69) +"║  Rating: %-49s  ║%n", r.getRating());
+                        }
+                        else 
+                        {
+                            System.out.printf(" ".repeat(69) +"║  Rating: %-49s  ║%n", "Not yet rated");
+                        }
+                        System.out.println(" ".repeat(69) +"║" + " ".repeat(61) + "║");
+                        System.out.println(" ".repeat(69) +"╚" + "═".repeat(61) + "╝");
+                    }
                 }
 
-                System.out.println("-------------------------------------");
+                if (respList.isEmpty()) 
+                {
+                    System.out.println(" ".repeat(69) +"No responses yet.");
+                    break; 
+                }
+
+                System.out.println(" ".repeat(69) +"\nRATE A RESPONSE");
+                System.out.println(" ".repeat(69) +"[1] Rate a response");
+                System.out.println(" ".repeat(69) +"[x] Go Back");
+                String choice = system.validate().requireText(" ".repeat(69) +"Choose: ");  
+                if (choice.equalsIgnoreCase("x")) 
+                {
+                    break;  
+                } 
+                else if (choice.equals("1")) 
+                {
+                    for (int i = 0; i < respList.size(); i++) 
+                    {
+                        System.out.println(" ".repeat(69) +"[" + (i + 1) + "] Response from " + respList.get(i).getRespond());
+                    }
+                    while (true) 
+                    {
+                        String selStr = system.validate().requireText(" ".repeat(69) +"Select response (or X to go back): ");
+                        
+                        if (selStr.equalsIgnoreCase("x")) 
+                        {
+                            break;  
+                        }
+                        
+                        int rIndex;
+                        try 
+                        {
+                            rIndex = Integer.parseInt(selStr);
+                            if (rIndex < 1 || rIndex > respList.size()) 
+                            {
+                            	System.out.println("                                        \u001B[31mInvalid selection. Try again.\u001B[0m");
+
+                                continue;
+                            }
+                        }
+                        catch (NumberFormatException e) 
+                        {
+                        	System.out.println("                                        \u001B[31mInvalid selection. Try again.\u001B[0m");
+
+                            continue;
+                        }
+                        
+                        HelpdeskResponse target = respList.get(rIndex - 1);
+                        
+                        if (target.getRating() > 0) 
+                        {
+                            String updateChoice = "";
+                            while (true) 
+                            {
+                                System.out.println(" ".repeat(69) +"This response is already rated with " + target.getRating() + ". Do you want to update it? (y/n)");
+                                updateChoice = system.validate().requireText(" ".repeat(69) +"Choose: ");
+                                if (updateChoice.equalsIgnoreCase("y") || updateChoice.equalsIgnoreCase("n")) 
+                                {
+                                    break;
+                                } 
+                                else 
+                                {
+                                    System.out.println("Invalid choice. Please enter y or n.");
+                                }
+                            }
+                            if (updateChoice.equalsIgnoreCase("n")) 
+                            {
+                                continue;
+                            }
+                        }
+                        
+                        int rating = system.validate().menuChoice(" ".repeat(69) +"Rate 1–5: ", 5);
+
+                        boolean ok = hrm.updateRating(
+                            target.getTicketId(),
+                            target.getRespond(),
+                            target.getTime(),
+                            rating
+                        );
+
+                        if (ok) 
+                        {
+                            System.out.println("Thank you! Your rating has been recorded.");
+                            responses = hrm.loadAll();  
+                            break;  
+                        } 
+                        else 
+                        {
+                            System.out.println("Error saving rating.");
+                            break; 
+                        }
+                    }
+                }
+                else 
+                {
+                    System.out.println("Invalid choice. Please enter 1 or x.");              
+                }
             }
-        }
-
-        if (respList.isEmpty()) 
-        {
-            System.out.println("No responses yet.");
-            return;
-        }
-
-
-        System.out.println("\nRATE A RESPONSE");
-        System.out.println("[1] Rate a response");
-        System.out.println("[2] Go Back");
-        int action = system.validate().menuChoice("Choose: ", 2);
-        
-        if (action == 2) 
-        {
-        	return;
-        }
-
-        for (int i = 0; i < respList.size(); i++) 
-        {
-            System.out.println("[" + (i+1) + "] Response from " + respList.get(i).getRespond());
-        }
-
-        int rIndex = system.validate().menuChoice("Select response: ", respList.size());
-        HelpdeskResponse target = respList.get(rIndex - 1);
-
-        int rating = system.validate().menuChoice("Rate 1–5: ", 5);
-
-        boolean ok = hrm.updateRating(
-            target.getTicketId(),
-            target.getRespond(),
-            target.getTime(),
-            rating
-        );
-
-        if (ok) 
-        {
-            System.out.println("Thank you! Your rating has been recorded.");
-        } 
-        else 
-        {
-            System.out.println("Error saving rating.");
         }
     }
 

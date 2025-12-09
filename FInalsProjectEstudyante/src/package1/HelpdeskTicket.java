@@ -8,9 +8,11 @@ public class HelpdeskTicket
     private String status;
     private String assignedWindow;
     private String date;
+    private String endorsedTo;
+
     
 
-    public HelpdeskTicket(int id, String studentNum, String issue, String status, String assignedWindow, String date)
+    public HelpdeskTicket(int id, String studentNum, String issue, String status, String date, String assignedWindow)
     {
         this.id = id;
         this.studentNum = studentNum;
@@ -50,6 +52,11 @@ public class HelpdeskTicket
     	return this.assignedWindow; 
     }
     
+    public String getEndorsedTo() 
+    { 
+    	return endorsedTo; 
+    }
+    
     public void setStatus(String status)
     { 
     	this.status = status;
@@ -65,38 +72,70 @@ public class HelpdeskTicket
     	this.date = date;
     }
     
+    public void setEndorsedTo(String endorsed) 
+    {
+    	this.endorsedTo = endorsed; 
+    }
+
+    
     public String toFileLine()
     {
         String safeIssue = this.issue.replace(",", "|");
-        return this.id + "," + this.studentNum + "," + safeIssue + "," + this.status + "," + this.assignedWindow + "," + this.date;
+        return id + "," + studentNum + "," + safeIssue + "," + status + "," + assignedWindow + "," + date + "," + endorsedTo;
     }
+    
 
     public static HelpdeskTicket fromLine(String line)
     {
-
-        String[] part = line.split(",", 6);
-        if (part.length < 6) 
-        {
-        	return null;	
-        }
-
+        String[] part = line.split(",", 7);
+        
+        if (part.length < 6) return null;
+        
         int id = 0;
+        
         try 
-        { 
+        {
         	id = Integer.parseInt(part[0]); 
-        }
+        } 
         
         catch (Exception e) 
         { 
         	id = 0; 
         }
         
+        
         String studentNum = part[1];
         String issue = part[2].replace("|", ",");
         String status = part[3];
-        String window = part[4];
-        String date = part[5];
+        
+        String assignedWindow;
+        if (part.length > 4) {
+        	
+            assignedWindow = part[4];
+        } 
+        else 
+        {
+            assignedWindow = "";
+        }
+        
+        String date;
+        if (part.length > 5) 
+        {
+            date = part[5];
+        } 
+        else 
+        {
+            date = "";
+        }
+        
+        String endorsedTo;
+        if (part.length > 6) {
+            endorsedTo = part[6];
+        } else {
+            endorsedTo = "";
+        }
+        
 
-        return new HelpdeskTicket(id, studentNum, issue, status, window, date);
+        return new HelpdeskTicket(id, studentNum, issue, status, date, assignedWindow);
     }
 }

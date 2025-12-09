@@ -28,7 +28,7 @@ public class UserManager extends DocuHandler
         for (String line : lines) 
         {
             String[] part = line.split(",");
-            if (part.length > 0 && part[0].equals(username))
+            if (part.length > 0 && part[0].equalsIgnoreCase(username))
             {
             	return true;
             }
@@ -63,7 +63,7 @@ public class UserManager extends DocuHandler
         for (String line : lines) 
         {
             String[] part = line.split(",");
-            if (part.length > 0 && part[0].equals(username))
+            if (part.length > 0 && part[0].equalsIgnoreCase(username))
             {
             	return line;
             }
@@ -90,7 +90,7 @@ public class UserManager extends DocuHandler
             
             if (part.length == 5) // student ito
             {
-                if (part[0].equals(username) && part[1].equals(password)) 
+                if (part[0].equalsIgnoreCase(username) && part[1].equals(password)) 
                 {
                     return new UserRecord(part[0], part[1], part[3], part[4]);
                 }
@@ -98,7 +98,7 @@ public class UserManager extends DocuHandler
             
             else if (part.length == 4) // employee ito
             { 
-                if (part[0].equals(username) && part[1].equals(password)) 
+                if (part[0].equalsIgnoreCase(username) && part[1].equals(password)) 
                 {
                     UserRecord.Role role = UserRecord.Role.valueOf(part[2]);
                     
@@ -119,7 +119,7 @@ public class UserManager extends DocuHandler
         {
             String[] part = line.split(",");
             
-            if (part.length > 0 && part[0].equals(username)) 
+            if (part.length > 0 && part[0].equalsIgnoreCase(username)) 
             {
                 continue; 
             }
@@ -136,11 +136,11 @@ public class UserManager extends DocuHandler
         for (String line : lines) {
             String[] part = line.split(",");
 
-            if (part.length > 0 && part[0].equals(username)) {
+            if (part.length > 0 && part[0].equalsIgnoreCase(username)) {
                 String output = "";
                 boolean first = true;
 
-                // Rewrites line
+  
                 for (String text : part) {
                     if (first) {
                         first = false;
@@ -169,11 +169,11 @@ public class UserManager extends DocuHandler
         for (String line : lines) {
             String[] part = line.split(",");
 
-            if (part.length > 0 && part[0].equals(username)) {
+            if (part.length > 0 && part[0].equalsIgnoreCase(username)) {
                 String output = "";
                 int count = 0;
 
-                // Rewrites line
+
                 for (String text : part) {
                     count++;
 
@@ -217,4 +217,3 @@ public class UserManager extends DocuHandler
         return list;
     }
 }
-
