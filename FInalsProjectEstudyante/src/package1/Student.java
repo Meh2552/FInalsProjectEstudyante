@@ -232,105 +232,126 @@ public class Student extends User
         System.out.println("Helpdesk ticket created. Ticket ID: " + id);
     }
 
-    public void viewHelpdeskReplies()
+    private void viewHelpdeskReplies() 
     {
         List<HelpdeskTicket> tickets = hm.loadTickets();
         List<HelpdeskResponse> responses = hrm.loadAll();
 
-        boolean foundAny = false;
-        System.out.println("=== MY HELP DESK TICKETS & RESPONSES ===");
-
-        for (HelpdeskTicket t : tickets)
+        ArrayList<HelpdeskTicket> myTickets = new ArrayList<>();
+        for (HelpdeskTicket t : tickets) 
         {
-            if (t.getStudentNum() != null && t.getStudentNum().equals(record.getStudentNum()))
+            if (t.getStudentNum() != null && t.getStudentNum().equals(record.getStudentNum())) 
             {
-                foundAny = true;
-                System.out.println("-".repeat(50));
-                System.out.println("Ticket ID: " + t.getId());
-                System.out.println("Issue: " + t.getIssue());
-                System.out.println("Date: " + t.getDate());
-                System.out.println("Status: " + t.getStatus());
-                
-                if (t.getAssignedWindow() != null && !t.getAssignedWindow().isEmpty())
-                {
-                    System.out.println("Assigned: " + t.getAssignedWindow());
-                }
-
-                List<HelpdeskResponse> respForTicket = hrm.loadByTicket(t.getId());
-                
-                if (respForTicket.isEmpty())
-                {
-                    System.out.println(" - No replies yet.");
-                }
-                
-                else
-                {
-                	for (HelpdeskResponse r : respForTicket) {
-                	    System.out.println(" - Reply from " + r.getRespond() + " " + r.getTime());
-                	    System.out.println("   -> " + r.getMessage());
-                	    System.out.println("   Rating: " + (r.getRating() >= 1 ? r.getRating() : "Unrated"));
-
-                	    if (r.getRating() < 1) 
-                	    {
-                	        if (system.validate().confirm("Would you like to rate this response? ")) 
-                	        {
-                	            int rate = 0;
-                	           
-                	            while (true) 
-                	            {
-                	                String input = system.validate().requireText("Enter rating 1-5 (X to cancel): ");
-                	                
-                	                if (input.equalsIgnoreCase("x"))
-                	                {
-                	                	break;
-                	                }
-                	                
-                	                try 
-                	                {
-                	                    rate = Integer.parseInt(input);
-                	                    
-                	                    if (rate >= 1 && rate <= 5) 
-                	                    {
-                	                    	break;
-                	                    	
-                	                    }
-                	                    
-                	                    System.out.println("Invalid rating. Must be 1-5.");
-                	                    
-                	                } 
-                	                
-                	                catch (NumberFormatException e) 
-                	                {
-                	                    System.out.println("Invalid input. Enter a number 1-5 or X to cancel.");
-                	                }
-                	            }
-                	            
-                	            if (rate >= 1 && rate <= 5) 
-                	            {
-                	                boolean ok = hrm.updateRating(r.getTicketId(), r.getRespond(), r.getTime(), rate);
-                	                
-                	                if (ok)
-                	                {
-                	                	System.out.println("Thank you — rating saved.");
-                	                }
-                	                
-                	                else 
-                	                {
-                	                	System.out.println("Failed to save rating.");
-                	                }
-                	            }
-                	        }
-                	    }
-                	}
-                }
+                myTickets.add(t);
             }
         }
 
-        if (!foundAny)
+        if (myTickets.isEmpty()) 
         {
-            System.out.println("You have no tickets.");
+            System.out.println("You have no helpdesk tickets.");
+            return;
+        }
+
+        System.out.println("=== MY HELP DESK TICKETS ===");
+
+        System.out.printf("%-4s | %-8s | %-14s | %-30s | %-16s | %-18s | %-12s%n", 
+                "No.", "TicketID", "Student", "Issue", "Window", "Last Modified", "Status");
+            System.out.println("-------------------------------------------------------------------------------------------------------------------------------------");
+
+            int idx = 1;
+            
+            for (HelpdeskTicket t : tickets)
+            {
+                String window = t.getAssignedWindow();
+                
+                if (window == null || window.isEmpty())
+                {
+                    window = "";
+                }
+
+                String lastModified = t.getDate();
+                if (lastModified == null)
+                {
+                	lastModified = "";
+                }
+                System.out.printf("%-4d | %-8d | %-14s | %-30s | %-16s | %-12s | %-12s%n", idx, t.getId(), t.getStudentNum(), t.getIssue(), window, lastModified, t.getStatus());
+                
+                idx++;
+            }
+
+        int choose = system.validate().minMaxXChoice("Select ticket to view (X to go back): ", 1, myTickets.size());
+        if (choose == -1) return;
+
+        HelpdeskTicket selected = myTickets.get(choose - 1);
+
+
+        ArrayList<HelpdeskResponse> respList = new ArrayList<>();
+        System.out.println("\n--- RESPONSES ---");
+        for (HelpdeskResponse r : responses) 
+        {
+            if (r.getTicketId() == selected.getId()) 
+            {
+                respList.add(r);
+                System.out.println("From: " + r.getRespond() + " (" + r.getTime() + ")");
+                System.out.println(" -> " + r.getMessage());
+                
+                if (r.getRating() > 0) 
+                {
+                    System.out.println(" Rating: " + r.getRating());
+                } 
+                else 
+                {
+                    System.out.println(" Rating: Not yet rated");
+                }
+
+                System.out.println("-------------------------------------");
+            }
+        }
+
+        if (respList.isEmpty()) 
+        {
+            System.out.println("No responses yet.");
+            return;
+        }
+
+
+        System.out.println("\nRATE A RESPONSE");
+        System.out.println("[1] Rate a response");
+        System.out.println("[2] Go Back");
+        int action = system.validate().menuChoice("Choose: ", 2);
+        
+        if (action == 2) 
+        {
+        	return;
+        }
+
+        for (int i = 0; i < respList.size(); i++) 
+        {
+            System.out.println("[" + (i+1) + "] Response from " + respList.get(i).getRespond());
+        }
+
+        int rIndex = system.validate().menuChoice("Select response: ", respList.size());
+        HelpdeskResponse target = respList.get(rIndex - 1);
+
+        int rating = system.validate().menuChoice("Rate 1–5: ", 5);
+
+        boolean ok = hrm.updateRating(
+            target.getTicketId(),
+            target.getRespond(),
+            target.getTime(),
+            rating
+        );
+
+        if (ok) 
+        {
+            System.out.println("Thank you! Your rating has been recorded.");
+        } 
+        else 
+        {
+            System.out.println("Error saving rating.");
         }
     }
+
 
    private void accountMan() {
         

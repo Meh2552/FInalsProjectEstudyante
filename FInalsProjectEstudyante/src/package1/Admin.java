@@ -176,34 +176,107 @@ public class Admin extends User
         while (true)
         {
             System.out.println("=== SELECT TICKET TO RESPOND / ENDORSE ===");
-            for (int i=0;i<tickets.size();i++)
+
+            System.out.printf("%-4s | %-8s | %-14s | %-30s | %-16s | %-18s | %-12s%n", 
+                "No.", "TicketID", "Student", "Issue", "Window", "Last Modified", "Status");
+            System.out.println("-------------------------------------------------------------------------------------------------------------------------------------");
+
+            int idx = 1;
+            
+            for (HelpdeskTicket t : tickets)
             {
-                HelpdeskTicket t = tickets.get(i);
-                String assigned = (t.getAssignedWindow()==null || t.getAssignedWindow().isEmpty()) ? "" : " | Assigned: " + t.getAssignedWindow();
-                System.out.println("[" + (i+1) + "] ID:" + t.getId() + " (" + t.getStudentNum() + ") " + t.getIssue() + " | Status: " + t.getStatus() + assigned);
+                String window = t.getAssignedWindow();
+                
+                if (window == null || window.isEmpty())
+                {
+                    window = "";
+                }
+
+                String lastModified = t.getDate();
+                if (lastModified == null)
+                {
+                	lastModified = "";
+                }
+                System.out.printf("%-4d | %-8d | %-14s | %-30s | %-16s | %-12s | %-12s%n", idx, t.getId(), t.getStudentNum(), t.getIssue(), window, lastModified, t.getStatus());
+                
+                idx++;
             }
 
-            int sel = system.validate().menuChoice("Select ticket: ", tickets.size());
-            String action = system.validate().requireText("Type [R]eply, [E]ndorse to window, [C]ancel: ");
+            String selStr = system.validate().requireText("Select ticket (or X to go back): ");
+            
+            if (selStr.equalsIgnoreCase("X")) return;
 
-            if (action.equalsIgnoreCase("C")) return;
-
+            int sel;
+            
+            try 
+            {
+                sel = Integer.parseInt(selStr);
+                if (sel < 1 || sel > tickets.size()) 
+                {
+                    System.out.println("Invalid selection. Try again.");
+                    continue;
+                }
+            } 
+            
+            catch (NumberFormatException e) 
+            {
+                System.out.println("Invalid input. Try again.");
+                continue;
+            }
+            
             HelpdeskTicket chosen = tickets.get(sel - 1);
 
-            if (action.equalsIgnoreCase("E"))
-            {
-                System.out.println("[1] Cashier [2] Accounting [3] Registrar [4] Cancel");
-                int w = system.validate().menuChoice("Choose window: ", 4);
-                if (w == 4) continue;
-                String window = (w==1) ? "CASHIER" : (w==2) ? "ACCOUNTING" : "REGISTRAR";
-                boolean ok = system.helpdeskManager().endorseTicket(chosen.getId(), window);
-                if (ok) {
+            String action = system.validate().requireText("Type [R]eply, [E]ndorse to window, [X] to go back: ");
+            if (action.equalsIgnoreCase("X")) return;
+
+            if (action.equalsIgnoreCase("E")) {
+                // Endorse menu now accepts X to go back
+                while (true) 
+                {
+                    System.out.println("[1] Cashier [2] Accounting [3] Registrar [X] Go back");
+                    String windowSel = system.validate().requireText("Choose window: ");
+                    
+                    if (windowSel.equalsIgnoreCase("X")) break;
+
+                    int w;
+                    try 
+                    {
+                        w = Integer.parseInt(windowSel);
+                        
+                        if (w < 1 || w > 3) 
+                        {
+                            System.out.println("Invalid selection. Try again.");
+                            continue;
+                        }
+                    } 
+                    
+                    catch (NumberFormatException e) 
+                    {
+                        System.out.println("Invalid input. Try again.");
+                        continue;
+                    }
+
+                    String window = "";
+                    if (w == 1) window = "CASHIER";
+                    if (w == 2) window = "ACCOUNTING";
+                    if (w == 3) window = "REGISTRAR";
+
+                String date = system.genDate();
+                boolean ok = system.helpdeskManager().endorseTicket(chosen.getId(), window, date);
+                
+                if (ok) 
+                {
                     System.out.println("Ticket endorsed to " + window + " successfully.");
-                } else {
+                } 
+                else 
+                {
                     System.out.println("Failed to endorse ticket.");
                 }
+                
                 return;
+                }
             }
+            
             else if (action.equalsIgnoreCase("R"))
             {
                 String respMsg = system.validate().requireText("Type your response message: ");
@@ -211,8 +284,10 @@ public class Admin extends User
                 String responderName = record.getFullName();
                 HelpdeskResponse resp = new HelpdeskResponse(chosen.getId(), responderName, respMsg, ts);
                 system.helpdeskResponseManager().addResponse(resp);
+
                 chosen.setStatus("Answered");
                 system.helpdeskManager().saveTickets(tickets);
+
                 System.out.println("Response saved and ticket marked Answered.");
                 return;
             }
