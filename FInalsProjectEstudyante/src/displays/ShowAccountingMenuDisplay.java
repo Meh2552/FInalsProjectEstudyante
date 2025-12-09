@@ -1,7 +1,7 @@
 package displays;
 
 public class ShowAccountingMenuDisplay {
-	public static void historyMenuDisplay() {
+	public static void accountingMenuDisplay() {
 		System.out.println("                                                             .d888888                                                 dP   oo                                        ");
 		System.out.println("                                                            d8'    88                                                 88                                             ");
 		System.out.println("                                                            88aaaaa88a .d8888b. .d8888b. .d8888b. dP    dP 88d888b. d8888P dP 88d888b. .d8888b.                      ");
