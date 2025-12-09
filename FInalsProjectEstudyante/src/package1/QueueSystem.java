@@ -324,36 +324,52 @@ public class QueueSystem {
                     if (limit != 0 && count >= limit) break;
                 }
 
+                if (showPrice) System.out.println("     ╚" + "═".repeat(150) + "╝");
+                else System.out.println("     ╚" + "═".repeat(134) + "╝");
+
             }
 
-            // Used to display current request in a queue
+            // Used to display current request in a queue3
+
             public ViewQueue(QueueRequest request, boolean showPrice) {
 
-                System.out.println("====Current Request====");
-                System.out.printf("   REQUEST: %-10s            %s%n", request.getId(), request.getDate()); 
-                System.out.printf("%n   REQUESTED DOCUMENT: %-15s  %s%n", request.getDocument(), request.getState());
-
-                if (showPrice) System.out.printf("   Price: %-15s  %n", request.getPrice());
-                System.out.printf("%n  Will expire in: %-15s%n", request.getExpiry());
+                System.out.println    ("     ╔═════════════════════════════════════════════════════════════╗");
+                System.out.printf("     ║  Current Request: %-10s          %20s  ║%n", request.getId(), request.getDate());
+                System.out.println    ("     ║                                                             ║");
+                String price = String.format("Php %.2f", Double.valueOf(request.getPrice()));
+                System.out.printf("     ║  Document Requested: %-10s       %20s  ║%n", request.getDocument(), price);
+                System.out.printf("     ║  State: %-30s                      ║%n", request.getState());
+                System.out.printf("     ║  Will expire in: %-11s          %20s  ║%n", request.getExpiry(), " ");
+                System.out.println    ("     ╚═════════════════════════════════════════════════════════════╝");
             }
 
             // UI
             public void viewDisplay(boolean showPrice) {
-                
-                if (showPrice) System.out.printf("      %-7s  |  %-12s  |  %-25s  |   %-20s  -   %-15s   |  %-10s  |  %s%n", "Request", "Student","Document", "Last Modified", "Expiry", "Price", " Status");
-                else System.out.printf("      %-7s  |  %-12s  |  %-25s  |   %-20s  -   %-15s   |  %s%n", "Request", "Student","Document", "Last Modified", "Expiry", " Status");
+
+                if (showPrice) {
+                    System.out.println("     ╔" + "═".repeat(150) + "╗");
+                    System.out.printf("     ║       %-7s   │ %-12s │ %-25s   │ %-18s │ %-10s │ %-12s  │ %-35s ║%n", "Request", "Student","Document", "Last Modified", "Expiry", "Price", "Status");
+                    String bottom = String.format("║       %-7s   ┼ %-12s ┼ %-25s   ┼ %-18s ┼ %-10s ┼ %-12s  ┼ %-35s ║", "", "", "", "", "", "", "").replace(" ", "─");
+                    System.out.println("     " + bottom);
+                }
+                else {
+                    System.out.println("     ╔" + "═".repeat(134) + "╗");
+                    System.out.printf("     ║       %-7s   │ %-12s │ %-25s   │ %-18s │ %-10s │ %-35s ║%n", "Request", "Student","Document", "Last Modified", "Expiry", " Status");
+                    String bottom = String.format("║       %-7s   ┼ %-12s ┼ %-25s   ┼ %-18s ┼ %-10s ┼ %-35s ║", "", "", "", "", "", "", "").replace(" ", "─");
+                    System.out.println("     " + bottom);
+                }
             }
 
 
             public void requestFormat(QueueRequest request, int index) {
 
-                System.out.printf("%4d. %-7s  |  %-12s  |  %-25s  |   %-20s  -   %-15s   |  %s%n",index , request.getId(), request.getStNum(), request.getDocument(), request.getDate(), request.getExpiry(), request.getState());
+                System.out.printf("     ║ %4d. %-7s   │ %-12s │ %-25s   │ %-18s │ %-10s │ %-35s ║%n",index , request.getId(), request.getStNum(), request.getDocument(), request.getDate(), request.getExpiry(), request.getState());
 
             }
 
             public void requestFormat(QueueRequest request, int index, boolean showPrice) {
 
-                System.out.printf("%4d. %-7s  |  %-12s  |  %-25s  |   %-20s  -   %-15s   |  %-10s  |  %s%n", index, request.getId(), request.getStNum(), request.getDocument(), request.getDate(), request.getExpiry() , request.getPrice(), request.getState());
+                System.out.printf("     ║ %4d. %-7s   │ %-12s │ %-25s   │ %-18s │ %-10s │ %-12s  │ %-35s ║%n", index, request.getId(), request.getStNum(), request.getDocument(), request.getDate(), request.getExpiry() , request.getPrice(), request.getState());
 
             }
 
