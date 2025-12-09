@@ -189,7 +189,7 @@ public class Cashier extends Employee
             if (index == 0) cur = cashierQ.peek();
 
             System.out.println("== Confirm Payment ==");
-            Cashier.Reciept rc = new Reciept(cur);
+            Cashier.Reciept rc = new Reciept(cur, false, false);
 
             double payment = 0;
             while (true) {
@@ -209,7 +209,8 @@ public class Cashier extends Employee
             else  qm.moveToWindow("Paid", "ACCOUNTING", system.genDate(), pauseQ, QueueSystem.getAccountQ(), index - 1, system.genDate(1));
             
             System.out.println("Successfully paid, pending approval.");
-            Cashier.Reciept rec = new Reciept(cur, String.valueOf(payment));
+            Cashier.Reciept rec = new Reciept(cur, String.valueOf(payment), false);
+            System.out.println("     ╚═════════════════════════════════════════════════════════════╝");
             rec.appendReci(cur, String.valueOf(payment));
             if (!system.validate().confirm("Load next? ")) return;
             index = 0;
@@ -269,7 +270,7 @@ public class Cashier extends Employee
         Reciept r = new Reciept();
 
         List<String> list = r.read();
-        int i = (list.size() + 9) / 10;
+        int i = (list.size() + 4) / 5;
         int current = 1;
 
         r.display(list, 1, i);
@@ -301,21 +302,29 @@ public class Cashier extends Employee
 
 
         // Total, not final output
-        public Reciept(QueueRequest request) {
-            System.out.printf("   REQUEST NO: %-10s            %s%n%n", request.getId(), request.getDate()); // %s is string, %n is enter?, %-10s (-10 means indented 10 spaces with '-' meaning to the left)
-            System.out.printf("   %-20s-%10s%n", "Document", "Fee");
-            System.out.printf("   %-20s-%10s%n%n", request.getDocument(), request.getPrice());
+        public Reciept(QueueRequest request, boolean hasBefore, boolean hasAfter) {
+            if (hasBefore) System.out.println("     ╠═════════════════════════════════════════════════════════════╣");
+            else System.out.println    ("     ╔═════════════════════════════════════════════════════════════╗");
+
+            System.out.printf("     ║  Request Number: %-10s           %20s  ║%n", request.getId(), request.getDate());
+            System.out.println    ("     ║─────────────────────────────────────────────────────────────║");
+            System.out.println    ("     ║  Document                       Fee                         ║");
+
+            String price = String.format("Php %.2f", Double.valueOf(request.getPrice()));
+            System.out.printf("     ║  %-30s %-20s        ║%n", request.getDocument(), price);
+
+            if (hasAfter) System.out.println("     ╟-------------------------------------------------------------╢");
+            else System.out.println("     ╚═════════════════════════════════════════════════════════════╝");
         }
 
         // Final Reciept
-        public Reciept(QueueRequest request, String payment) {
-            this(request);
+        public Reciept(QueueRequest request, String payment, boolean hasBefore) {
+            this(request, hasBefore, true);
 
-            System.out.println("-".repeat(50));
-            System.out.printf("   %-20s-%10s%n", request.getDocument(), "Paid: " + payment);
-
-            double change = Double.parseDouble(payment) - Double.parseDouble(request.getPrice());
-            System.out.printf("   %-20s-%10s%n", "", "Change: " + change);
+            String paid = String.format("Php %.2f", Double.valueOf(payment));
+            String change = String.format("Php %.2f", (Double.parseDouble(payment) - Double.parseDouble(request.getPrice())));
+            System.out.println    ("     ║       m                                                     ║");
+            System.out.printf("     ║  %-30s %-25s   ║%n", "Paid: " + paid, "Change: " + change);
 
         }
 
@@ -331,19 +340,25 @@ public class Cashier extends Employee
             
             Collections.reverse(read);
             int items = 0;
+            boolean hasBefore = false;
 
             if (read != null) {
                 for (String line : read) {
 
                     items++;
-                    if (items < (page - 1) * 10) continue;
-                    else if (items > page * 10) break;
+                    if (items < (page - 1) * 5) continue;
+                    else if (items > page * 5) {
+                        System.out.println("     ╚═════════════════════════════════════════════════════════════╝");
+                        break;
+                    }
 
                     String parts[] = line.split(",");
 
                     QueueRequest request = QueueRequest.fromLine(line);
-                    Reciept r = new Reciept(request, parts[7]);
+                    Reciept r = new Reciept(request, parts[7], hasBefore);
+                    hasBefore = true;
                 }
+                if (read.size() == items) System.out.println("     ╚═════════════════════════════════════════════════════════════╝");
             }
 
             if (maxPage == 1) {
