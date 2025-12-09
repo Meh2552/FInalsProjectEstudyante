@@ -508,6 +508,9 @@ public class QueueSystem {
 
                 }
 
+
+                if (showPrice) System.out.println("     ╚" + "═".repeat(144) + "╝");
+                else System.out.println("     ╚" + "═".repeat(128) + "╝");
                 prompt(pageCount, page);
             }
 
@@ -556,13 +559,29 @@ public class QueueSystem {
 
                 }
 
+
+                if (showPrice) System.out.println("     ╚" + "═".repeat(144) + "╝");
+                else System.out.println("     ╚" + "═".repeat(128) + "╝");
                 prompt(pageCount, page);
             }
 
             // UI
             private void viewDisplay(boolean showPrice) {
-                if (showPrice) System.out.printf("  %-15s  |  %-7s  |  %-15s  |  %-25s  |   %-20s  |  %-12s  |  %s%n", "Window", "Request", "Student", "Document", "Date & Time", "Price", " Status");
-                else System.out.printf("  %-15s  |  %-7s  |  %-15s  |  %-25s  |   %-20s  |  %s%n", "Window", "Request", "Student", "Document", "Date & Time", " Status");
+
+                if (showPrice) {
+                    System.out.println("     ╔" + "═".repeat(144) + "╗");
+                    System.out.printf("     ║ %-15s   │ %-7s   │ %-12s │ %-25s   │ %-18s │ %-12s  │ %-25s    ║%n", "Window", "Request", "Student", "Document", "Date & Time", "Price", "Status");
+                    String bottom = String.format("║ %-15s   ┼ %-7s   ┼ %-12s ┼ %-25s   ┼ %-18s ┼ %-12s  ┼ %-25s    ║", "", "", "", "", "", "", "").replace(" ", "─");
+                    System.out.println("     " + bottom);
+                } 
+                
+                else {
+                    System.out.println("     ╔" + "═".repeat(128) + "╗");
+                    System.out.printf("     ║ %-15s   │ %-7s   │ %-12s │ %-25s   │ %-18s │ %-25s    ║%n", "Window", "Request", "Student", "Document", "Date & Time", " Status");
+                    String bottom = String.format("║ %-15s   ┼ %-7s   ┼ %-12s ┼ %-25s   ┼ %-18s ┼ %-25s    ║", "", "", "", "", "", "", "").replace(" ", "─");
+                    System.out.println("     " + bottom);
+                }
+
             }
 
             private void empty() {
@@ -575,12 +594,12 @@ public class QueueSystem {
                 String parts[] = item.split(",");
 
                 if (showPrice) {
-                    if (parts.length == 7) System.out.printf("  %-15s  |  %-7s  |  %-15s  |  %-25s  |   %-20s  |  %-12s  |  %s%n", parts[0], parts[1], parts[2], parts[3], parts[4], parts[6], parts[5]);
-                    else System.out.printf("  %-15s  |  %-7s  |  %-15s  |  %-25s  |   %-20s  |  %-12s  |  %s%n", parts[0], parts[1], parts[2], parts[3], parts[4], "-", parts[5]);
+                   if (parts.length == 7) System.out.printf("     ║ %-15s   │ %-7s   │ %-12s │ %-25s   │ %-18s │ %-12s  │ %-25s    ║%n", parts[0], parts[1], parts[2], parts[3], parts[4], parts[6], parts[5]);
+                    else System.out.printf("     ║ %-15s   │ %-7s   │ %-12s │ %-25s   │ %-18s │ %-12s  │ %-25s    ║%n", parts[0], parts[1], parts[2], parts[3], parts[4], "-", parts[5]);
                 }
 
                 else {
-                    System.out.printf("  %-15s  |  %-7s  |  %-15s  |  %-25s  |   %-20s  |  %s%n", parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]);
+                    System.out.printf("     ║ %-15s   │ %-7s   │ %-12s │ %-25s   │ %-18s │ %-25s    ║%n", parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]);
                 }
             }
 

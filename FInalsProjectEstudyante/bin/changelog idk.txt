@@ -1,3 +1,7 @@
+-- Changes 12 9 -- 
+- tables for Displays in queuesystem
+- helpdesk idk tbh probably meron changes
+
 --- Basta latest as of 11/14 ---
 (not 100% accurate i think)
 
