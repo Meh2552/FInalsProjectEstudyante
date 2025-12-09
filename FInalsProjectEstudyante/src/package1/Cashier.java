@@ -71,6 +71,8 @@ public class Cashier extends Employee
             {
                 System.out.println("\n                                        \u001B[32m- Loading cashier history\u001B[0m");
                 System.out.println("\n                                        -----------------------------------------------------------------------------------------------------------------------------\n");
+                ShowCashierMenuDisplay.CashierHistoryDisplay();
+                
                 ArrayList<String> historyTag = new ArrayList<>();
                 historyTag.add("CASHIER");
                 historyTag.add("PAUSED");
@@ -131,7 +133,9 @@ public class Cashier extends Employee
 
             super.requestManager();
             
-            String select = system.validate().requireText("                                        X - Go Back, G - Go to payment, P - Pause, U - Unpause request, E - Change Expiry V - View Request List, C - Cancel");
+            ShowCashierMenuDisplay.CashierRequestManagerDisplay();
+
+            String select = system.validate().requireText("                                        Choose: ");
 
             switch(select) {
 
@@ -310,6 +314,8 @@ public class Cashier extends Employee
         int i = (list.size() + 4) / 5;
         int current = 1;
 
+        ShowCashierMenuDisplay.ReceiptsDisplay();
+        System.out.println("");
         r.display(list, 1, i);
 
         while (true) {
