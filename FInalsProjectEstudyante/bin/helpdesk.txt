@@ -1,5 +1,4 @@
-2,02000-160420,Ninakaw po yung wallet ko,Endorsed -> REGISTRAR,REGISTRAR,[09-12-2025] 13:19
-5,02000-160420,Payment concern,Endorsed -> CASHIER,CASHIER,[09-12-2025] 13:26
-3,02000-160420,Grade correction,Endorsed -> REGISTRAR,REGISTRAR,[09-12-2025] 13:27
-1,02000-160420,,Endorsed -> REGISTRAR,REGISTRAR,[09-12-2025] 13:28
+2,02000-160420,Ninakaw po yung wallet ko,Pending,[21-11-2025] 14:17,
+3,02000-160420,Grade correction,Pending,[24-11-2025] 01:42,
 4,02000-160420,Payment concern,Answered,[24-11-2025] 03:20,REGISTRAR
+1,02000-160420,,Answered,[21-11-2025] 14:11,

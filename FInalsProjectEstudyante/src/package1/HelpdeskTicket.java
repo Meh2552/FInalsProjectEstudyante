@@ -6,18 +6,17 @@ public class HelpdeskTicket
     private String studentNum;
     private String issue;
     private String status;
-    private String assignedWindow;
     private String date;
-    
+    private String assignedWindow;
 
-    public HelpdeskTicket(int id, String studentNum, String issue, String status, String assignedWindow, String date)
+    public HelpdeskTicket(int id, String studentNum, String issue, String status, String date, String assignedWindow)
     {
         this.id = id;
         this.studentNum = studentNum;
         this.issue = issue;
         this.status = status;
-        this.assignedWindow = assignedWindow;
         this.date = date;
+        this.assignedWindow = assignedWindow;
     }
 
     public int getId() 
@@ -60,22 +59,18 @@ public class HelpdeskTicket
     	this.assignedWindow = window; 
     }
     
-    public void setDate(String date)
-    {
-    	this.date = date;
-    }
-    
     public String toFileLine()
     {
         String safeIssue = this.issue.replace(",", "|");
-        return this.id + "," + this.studentNum + "," + safeIssue + "," + this.status + "," + this.assignedWindow + "," + this.date;
+        String aw = (assignedWindow == null) ? "" : assignedWindow;
+        return id + "," + studentNum + "," + safeIssue + "," + status + "," + date + "," + aw;
     }
 
     public static HelpdeskTicket fromLine(String line)
     {
 
         String[] part = line.split(",", 6);
-        if (part.length < 6) 
+        if (part.length < 5) 
         {
         	return null;	
         }
@@ -94,9 +89,14 @@ public class HelpdeskTicket
         String studentNum = part[1];
         String issue = part[2].replace("|", ",");
         String status = part[3];
-        String window = part[4];
-        String date = part[5];
+        String date = part[4];
+        String aw = "";
+        
+        if (part.length >= 6)
+        {
+        	aw = part[5];
+        }
 
-        return new HelpdeskTicket(id, studentNum, issue, status, window, date);
+        return new HelpdeskTicket(id, studentNum, issue, status, date, aw);
     }
 }

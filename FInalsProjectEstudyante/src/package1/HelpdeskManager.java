@@ -88,7 +88,7 @@ public class HelpdeskManager extends DocuHandler
         write(out);
     }
 
-    public boolean endorseTicket(int ticketId, String window, String date)
+    public boolean endorseTicket(int ticketId, String window)
     {
         List<HelpdeskTicket> tickets = loadTickets();
         boolean found = false;
@@ -98,7 +98,6 @@ public class HelpdeskManager extends DocuHandler
             {
                 t.setAssignedWindow(window);
                 t.setStatus("Endorsed -> " + window);
-                t.setDate(date); 
                 found = true;
                 break;
             }
@@ -106,9 +105,9 @@ public class HelpdeskManager extends DocuHandler
         
         if (found) 
         {
-            saveTickets(tickets);
+        	saveTickets(tickets);
+        	
         }
         return found;
     }
-
 }
