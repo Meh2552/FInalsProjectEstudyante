@@ -137,6 +137,7 @@ public class Student extends User
     private void viewRequests() 
     {
         List<DocumentRequest> all = dm.loadAll();
+        ArrayList<DocumentRequest> requestL = new ArrayList<>();
         
         boolean found = false;
         
@@ -146,17 +147,58 @@ public class Student extends User
         {
             if (req.getStudentNum() != null && req.getStudentNum().equals(record.getStudentNum())) 
             {
-                System.out.println("-".repeat(50));
-                System.out.printf("   REQUEST: %-10s            %s%n", req.getId(), req.getDate()); //TODO: mabye pages idk
-                System.out.printf("%n   REQUESTED DOCUMENT: %-15s  %s%n"  ,req.getDocName(), req.getStatus());
-                found = true;
+                requestL.add(req);
             }
         }
-        
-        if (!found)
+
+        Collections.reverse(requestL);
+        if (requestL.isEmpty())
         {
         	System.out.println("No requests found.");
+            return;
         }
+
+        int pageCount = (requestL.size() + 6 ) / 7;
+        int page = 1;
+        while (true) {
+            int items = 0;
+
+            for (DocumentRequest request : requestL) {
+                items++;
+                
+                if (items < (page - 1) * 7) continue;
+                else if (items >= page * 7) break;
+
+                System.out.println    ("     ╔═════════════════════════════════════════════════════════════╗");
+                System.out.printf("     ║  Request ID: %-10s               %20s  ║%n", request.getId(), request.getDate());
+                System.out.println    ("     ║─────────────────────────────────────────────────────────────║");
+                System.out.println    ("     ║                                                             ║");
+                System.out.printf("     ║  Document Requested: %-30s         ║%n", request.getDocName());
+                System.out.printf("     ║  State: %-30s                      ║%n", request.getStatus());
+                System.out.println    ("     ║                                                             ║");
+                System.out.println    ("     ╚═════════════════════════════════════════════════════════════╝");
+
+            }
+            System.out.println("----------------------------");
+
+            if (pageCount == 1) System.out.println(" Viewing page " + page);
+            else System.out.println(" Viewing page " + page + " out of " + pageCount);
+
+            int input = system.validate().minMaxXChoice("Go to page ('x' to go back):", 1, pageCount);
+            if (input == page) {
+                System.out.println("Already on page " + input);
+                continue;
+            }
+
+            if (input == -1) {
+                return;
+            }
+            
+            page = input;
+        }
+
+
+            
     }
 
     private void helpdesk() 
